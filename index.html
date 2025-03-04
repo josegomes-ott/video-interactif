@@ -17,8 +17,7 @@
         let currentVideo;
         let shaderGraphics;
         let touchX = 0.5, touchY = 0.5;
-        let colorShift = 0.5;
-        let distortion = 0.2;
+        let effectStrength = 0.3;
         let videoStarted = false;
         
         function preload() {
@@ -51,8 +50,7 @@
             myShader.setUniform("u_texture", currentVideo);
             myShader.setUniform("u_time", millis() / 1000);
             myShader.setUniform("u_touch", [touchX, touchY]);
-            myShader.setUniform("u_colorShift", colorShift);
-            myShader.setUniform("u_distortion", distortion);
+            myShader.setUniform("u_effectStrength", effectStrength);
             
             shaderGraphics.rect(-1, -1, 2, 2);
             image(shaderGraphics, -width / 2, -height / 2, width, height);
@@ -61,16 +59,14 @@
         function touchMoved() {
             touchX = mouseX / width;
             touchY = mouseY / height;
-            colorShift = sin(frameCount * 0.05) * 0.7;
-            distortion = cos(frameCount * 0.05) * 0.3;
+            effectStrength = sin(frameCount * 0.1) * 0.7 + 0.5;
             return false;
         }
         
         function mouseMoved() {
             touchX = mouseX / width;
             touchY = mouseY / height;
-            colorShift = sin(frameCount * 0.05) * 0.7;
-            distortion = cos(frameCount * 0.05) * 0.3;
+            effectStrength = sin(frameCount * 0.1) * 0.7 + 0.5;
         }
         
         function mousePressed() {
@@ -94,16 +90,15 @@
                 uniform sampler2D u_texture;
                 uniform float u_time;
                 uniform vec2 u_touch;
-                uniform float u_colorShift;
-                uniform float u_distortion;
+                uniform float u_effectStrength;
                 
                 void main() {
                     vec2 uv = vTexCoord;
-                    uv.x += sin(uv.y * 10.0 + u_time * 2.0) * u_distortion * (u_touch.x - 0.5);
-                    uv.y += cos(uv.x * 10.0 + u_time * 2.0) * u_distortion * (u_touch.y - 0.5);
+                    uv.x += sin(uv.y * 15.0 + u_time * 2.0) * u_effectStrength * (u_touch.x - 0.5);
+                    uv.y += cos(uv.x * 15.0 + u_time * 2.0) * u_effectStrength * (u_touch.y - 0.5);
                     
                     vec4 tex = texture2D(u_texture, uv);
-                    tex.rgb += vec3(sin(u_time + uv.x) * u_colorShift, cos(u_time + uv.y) * u_colorShift, sin(u_time * 0.5) * u_colorShift);
+                    tex.rgb *= vec3(sin(u_time * 2.0) * u_effectStrength + 1.0, cos(u_time) * u_effectStrength + 1.0, 1.0);
                     gl_FragColor = tex;
                 }`
             );
