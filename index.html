@@ -50,19 +50,17 @@
             clearCanvas();
         }
 
-        function detectThreeFingers(event) {
-            if (event.touches.length === 3) {
+        function detectTouches(event) {
+            if (event.touches.length === 1) {
                 for (let i = 0; i < event.touches.length; i++) {
                     let x = event.touches[i].clientX;
                     let y = event.touches[i].clientY;
                     paintPositions.push({ x, y, stuck: false });
                 }
-            }
-        }
-
-        function detectTwoFingers(event) {
-            if (event.touches.length === 2) {
+            } else if (event.touches.length === 2) {
                 clearCanvas();
+            } else if (event.touches.length === 3) {
+                changeVideo();
             }
         }
 
@@ -122,9 +120,7 @@
             }
         }
 
-        document.body.addEventListener('click', changeVideo);
-        document.body.addEventListener('touchmove', detectThreeFingers);
-        document.body.addEventListener('touchstart', detectTwoFingers);
+        document.body.addEventListener('touchstart', detectTouches);
         
         setInterval(() => {
             trackMotion();
