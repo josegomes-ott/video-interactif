@@ -8,8 +8,8 @@
         body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
         video { 
             position: absolute;
-            width: 100vw; 
-            height: 100vh;
+            width: 90vw; 
+            height: 90vh;
             object-fit: cover;
             filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
             transition: filter 0.2s ease-in-out;
@@ -24,7 +24,7 @@
         }
         #colorName {
             position: absolute;
-            top: 20px;
+            bottom: 20px;
             left: 20px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
@@ -35,14 +35,15 @@
         }
         #toggleColorName {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             padding: 10px;
             background: white;
             border: none;
             cursor: pointer;
             font-size: 16px;
             border-radius: 5px;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -95,7 +96,7 @@
                     let y = event.touches[i].clientY;
                     let color = getVideoPixelColor(x, y);
                     let colorName = getColorName(color);
-                    paintPositions.push({ x, y, color, colorName, stuck: false, shape: getRandomShape() });
+                    paintPositions.push({ x, y, color, colorName, stuck: false });
                 }
             } else if (touchCount === 2) {
                 clearCanvas();
@@ -122,29 +123,6 @@
             return colorNames[hex] || "Unknown";
         }
 
-        function getRandomShape() {
-            return Math.random() > 0.5 ? "circle" : "splash";
-        }
-
-        function drawTexturedSplash(x, y, color, shape) {
-            let splashSize = 50 + Math.random() * 50;
-            ctx.fillStyle = color;
-            ctx.save();
-            ctx.translate(x, y);
-            if (shape === "circle") {
-                ctx.beginPath();
-                ctx.arc(0, 0, splashSize / 2, 0, Math.PI * 2);
-                ctx.fill();
-            } else {
-                let img = new Image();
-                img.src = 'splash_texture.png';
-                img.onload = function() {
-                    ctx.drawImage(img, -splashSize / 2, -splashSize / 2, splashSize, splashSize);
-                };
-            }
-            ctx.restore();
-        }
-
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             paintPositions = [];
@@ -154,7 +132,14 @@
         function updatePaint() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let p of paintPositions) {
-                drawTexturedSplash(p.x, p.y, p.color, p.shape);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
+                ctx.fill();
+                if (showColorName) {
+                    colorNameDiv.innerText = p.colorName;
+                    colorNameDiv.style.display = "block";
+                }
             }
         }
 
