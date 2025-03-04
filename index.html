@@ -33,8 +33,10 @@
             setupShader();
             
             currentVideo = random(videos);
+            videos.forEach(vid => vid.hide());
+            
+            currentVideo.show();
             currentVideo.loop();
-            currentVideo.hide();
         }
         
         function draw() {
@@ -52,14 +54,21 @@
         function touchMoved() {
             touchX = mouseX;
             touchY = mouseY;
-            colorShift = sin(frameCount * 0.05) * 0.5;
-            distortion = cos(frameCount * 0.05) * 0.1;
+            colorShift = sin(frameCount * 0.1) * 0.5;
+            distortion = cos(frameCount * 0.1) * 0.2;
             
             if (random() > 0.95) {
-                currentVideo.stop();
-                currentVideo = random(videos);
-                currentVideo.loop();
+                switchVideo();
             }
+        }
+        
+        function switchVideo() {
+            currentVideo.hide();
+            currentVideo.stop();
+            
+            currentVideo = random(videos);
+            currentVideo.show();
+            currentVideo.loop();
         }
         
         function setupShader() {
@@ -78,7 +87,7 @@
                     uv.y += cos(uv.x * 10.0 + u_time) * u_distortion;
                     
                     vec4 tex = texture2D(u_texture, uv);
-                    tex.rgb *= vec3(1.0 + u_colorShift, 0.7 + sin(u_time) * 0.3, 0.7 + cos(u_time) * 0.3);
+                    tex.rgb *= vec3(1.0 + u_colorShift, 0.8 + sin(u_time) * 0.2, 0.8 + cos(u_time) * 0.2);
                     gl_FragColor = tex;
                 }`
             );
@@ -86,8 +95,8 @@
         
         function vidLoaded() {
             this.volume(0);
-            this.loop();
             this.hide();
+            this.play();
         }
     </script>
 </body>
