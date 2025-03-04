@@ -45,17 +45,18 @@
             myShader.setUniform("u_colorShift", colorShift);
             myShader.setUniform("u_distortion", distortion);
             
-            shaderGraphics.rect(0, 0, width, height);
-            image(shaderGraphics, -width / 2, -height / 2);
+            shaderGraphics.rect(-1, -1, 2, 2);
+            image(shaderGraphics, -width / 2, -height / 2, width, height);
         }
         
         function touchMoved() {
             touchX = mouseX;
             touchY = mouseY;
             colorShift = sin(frameCount * 0.05) * 0.5;
-            distortion = cos(frameCount * 0.05) * 0.2;
+            distortion = cos(frameCount * 0.05) * 0.1;
             
-            if (random() > 0.98) {
+            if (random() > 0.95) {
+                currentVideo.stop();
                 currentVideo = random(videos);
                 currentVideo.loop();
             }
@@ -77,7 +78,7 @@
                     uv.y += cos(uv.x * 10.0 + u_time) * u_distortion;
                     
                     vec4 tex = texture2D(u_texture, uv);
-                    tex.rgb *= vec3(1.0 + u_colorShift, 0.5 + sin(u_time) * 0.5, 0.5 + cos(u_time) * 0.5);
+                    tex.rgb *= vec3(1.0 + u_colorShift, 0.7 + sin(u_time) * 0.3, 0.7 + cos(u_time) * 0.3);
                     gl_FragColor = tex;
                 }`
             );
