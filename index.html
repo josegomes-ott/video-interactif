@@ -22,12 +22,36 @@
             height: 100vh;
             pointer-events: none;
         }
+        #colorName {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            font-size: 18px;
+            border-radius: 5px;
+            display: none;
+        }
+        #toggleColorName {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <video id="video" autoplay loop muted></video>
     <canvas id="paintCanvas"></canvas>
     <canvas id="trackingCanvas" style="display: none;"></canvas>
+    <div id="colorName"></div>
+    <button id="toggleColorName">Nom des couleurs</button>
     
     <script>
         const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
@@ -36,8 +60,12 @@
         const trackingCanvas = document.getElementById('trackingCanvas');
         const ctx = canvas.getContext('2d');
         const trackingCtx = trackingCanvas.getContext('2d');
+        const colorNameDiv = document.getElementById('colorName');
+        const toggleColorNameButton = document.getElementById('toggleColorName');
+        let showColorName = false;
         let currentVideoIndex = Math.floor(Math.random() * videos.length);
         let paintPositions = [];
+        let videoPaused = false;
         
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -50,18 +78,31 @@
             clearCanvas();
         }
 
+        function toggleVideo() {
+            if (videoPaused) {
+                videoElement.play();
+            } else {
+                videoElement.pause();
+            }
+            videoPaused = !videoPaused;
+        }
+
         function detectTouches(event) {
-            if (event.touches.length === 1) {
+            let touchCount = event.touches.length;
+            if (touchCount === 1) {
                 for (let i = 0; i < event.touches.length; i++) {
                     let x = event.touches[i].clientX;
                     let y = event.touches[i].clientY;
                     let color = getVideoPixelColor(x, y);
-                    paintPositions.push({ x, y, color, stuck: false });
+                    let colorName = getColorName(color);
+                    paintPositions.push({ x, y, color, colorName, stuck: false, shape: getRandomShape() });
                 }
-            } else if (event.touches.length === 2) {
+            } else if (touchCount === 2) {
                 clearCanvas();
-            } else if (event.touches.length === 3) {
+            } else if (touchCount === 3) {
                 changeVideo();
+            } else if (touchCount === 4) {
+                toggleVideo();
             }
         }
 
@@ -73,68 +114,57 @@
             return `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, 0.8)`;
         }
 
-        function drawTexturedSplash(x, y, color) {
+        function getColorName(color) {
+            let colorNames = {"#FF0000": "Red", "#00FF00": "Green", "#0000FF": "Blue", "#FFFF00": "Yellow", "#FFA500": "Orange", "#800080": "Purple", "#00FFFF": "Cyan"};
+            let hex = color.replace(/rgba?\((\d+), (\d+), (\d+).*/, (match, r, g, b) => {
+                return `#${((1 << 24) + (parseInt(r) << 16) + (parseInt(g) << 8) + parseInt(b)).toString(16).slice(1).toUpperCase()}`;
+            });
+            return colorNames[hex] || "Unknown";
+        }
+
+        function getRandomShape() {
+            return Math.random() > 0.5 ? "circle" : "splash";
+        }
+
+        function drawTexturedSplash(x, y, color, shape) {
             let splashSize = 50 + Math.random() * 50;
-            let rotation = Math.random() * 360;
             ctx.fillStyle = color;
             ctx.save();
             ctx.translate(x, y);
-            ctx.rotate(rotation * Math.PI / 180);
-            ctx.beginPath();
-            ctx.arc(0, 0, splashSize / 2, 0, Math.PI * 2);
-            ctx.fill();
+            if (shape === "circle") {
+                ctx.beginPath();
+                ctx.arc(0, 0, splashSize / 2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                let img = new Image();
+                img.src = 'splash_texture.png';
+                img.onload = function() {
+                    ctx.drawImage(img, -splashSize / 2, -splashSize / 2, splashSize, splashSize);
+                };
+            }
             ctx.restore();
         }
 
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             paintPositions = [];
-        }
-
-        function trackMotion() {
-            trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
-            let frame = trackingCtx.getImageData(0, 0, trackingCanvas.width, trackingCanvas.height);
-            let length = frame.data.length;
-            let movementThreshold = 30;
-            
-            for (let i = 0; i < length; i += 4) {
-                let r = frame.data[i];
-                let g = frame.data[i + 1];
-                let b = frame.data[i + 2];
-                let avg = (r + g + b) / 3;
-                
-                if (avg < movementThreshold) {
-                    let px = (i / 4) % trackingCanvas.width;
-                    let py = Math.floor((i / 4) / trackingCanvas.width);
-                    
-                    let screenX = (px / trackingCanvas.width) * window.innerWidth;
-                    let screenY = (py / trackingCanvas.height) * window.innerHeight;
-                    
-                    for (let p of paintPositions) {
-                        if (!p.stuck && Math.abs(p.x - screenX) < 50 && Math.abs(p.y - screenY) < 50) {
-                            p.x = screenX;
-                            p.y = screenY;
-                            p.stuck = true;
-                        }
-                    }
-                }
-            }
+            colorNameDiv.style.display = "none";
         }
 
         function updatePaint() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let p of paintPositions) {
-                drawTexturedSplash(p.x, p.y, p.color);
+                drawTexturedSplash(p.x, p.y, p.color, p.shape);
             }
         }
 
+        toggleColorNameButton.addEventListener("click", () => {
+            showColorName = !showColorName;
+            colorNameDiv.style.display = showColorName ? "block" : "none";
+        });
+
         document.body.addEventListener('touchstart', detectTouches);
-        
-        setInterval(() => {
-            trackMotion();
-            updatePaint();
-        }, 100);
-        
+        setInterval(updatePaint, 100);
         videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
