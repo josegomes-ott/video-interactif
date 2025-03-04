@@ -4,110 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vidéo Interactive</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: black; }
-        canvas { display: block; }
+        body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        video { 
+            position: absolute;
+            width: 100vw; 
+            height: 100vh;
+            object-fit: cover;
+            filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
+            transition: filter 0.2s ease-in-out;
+        }
     </style>
 </head>
 <body>
+    <video id="video" autoplay loop muted></video>
+    
     <script>
-        let videos = [];
-        let currentVideo;
-        let shaderGraphics;
-        let touchX = 0.5, touchY = 0.5;
-        let effectStrength = 0.3;
-        let videoStarted = false;
-        
-        function preload() {
-            videos.push(createVideo('video1.mp4', vidLoaded));
-            videos.push(createVideo('video2.mp4', vidLoaded));
-            videos.push(createVideo('video3.mp4', vidLoaded));
+        const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
+        const videoElement = document.getElementById('video');
+        let currentVideoIndex = Math.floor(Math.random() * videos.length);
+        let hue = 0, brightness = 1, contrast = 1, saturation = 1;
+
+        function changeVideo() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
         }
-        
-        function setup() {
-            createCanvas(windowWidth, windowHeight, WEBGL);
-            shaderGraphics = createGraphics(width, height, WEBGL);
-            shaderGraphics.noStroke();
-            setupShader();
+
+        function applyEffects(event) {
+            let x = event.clientX / window.innerWidth;
+            let y = event.clientY / window.innerHeight;
             
-            currentVideo = random(videos);
-            videos.forEach(vid => vid.hide());
-            
-            currentVideo.show();
-            currentVideo.loop();
-            currentVideo.volume(0);
+            hue = x * 360;
+            brightness = 1 + (y * 0.5);
+            contrast = 1 + (x * 0.5);
+            saturation = 1 + (y * 0.5);
+
+            videoElement.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`;
         }
+
+        document.body.addEventListener('mousemove', applyEffects);
+        document.body.addEventListener('click', changeVideo);
         
-        function draw() {
-            if (!videoStarted) {
-                currentVideo.play();
-                videoStarted = true;
-            }
-            
-            shaderGraphics.shader(myShader);
-            myShader.setUniform("u_texture", currentVideo);
-            myShader.setUniform("u_time", millis() / 1000);
-            myShader.setUniform("u_touch", [touchX, touchY]);
-            myShader.setUniform("u_effectStrength", effectStrength);
-            
-            shaderGraphics.rect(-1, -1, 2, 2);
-            image(shaderGraphics, -width / 2, -height / 2, width, height);
-        }
-        
-        function touchMoved() {
-            touchX = mouseX / width;
-            touchY = mouseY / height;
-            effectStrength = sin(frameCount * 0.1) * 0.7 + 0.5;
-            return false;
-        }
-        
-        function mouseMoved() {
-            touchX = mouseX / width;
-            touchY = mouseY / height;
-            effectStrength = sin(frameCount * 0.1) * 0.7 + 0.5;
-        }
-        
-        function mousePressed() {
-            switchVideo();
-        }
-        
-        function switchVideo() {
-            currentVideo.hide();
-            currentVideo.stop();
-            
-            currentVideo = random(videos);
-            currentVideo.show();
-            currentVideo.loop();
-            currentVideo.volume(0);
-        }
-        
-        function setupShader() {
-            myShader = shaderGraphics.createShader(
-                `precision mediump float;
-                varying vec2 vTexCoord;
-                uniform sampler2D u_texture;
-                uniform float u_time;
-                uniform vec2 u_touch;
-                uniform float u_effectStrength;
-                
-                void main() {
-                    vec2 uv = vTexCoord;
-                    uv.x += sin(uv.y * 15.0 + u_time * 2.0) * u_effectStrength * (u_touch.x - 0.5);
-                    uv.y += cos(uv.x * 15.0 + u_time * 2.0) * u_effectStrength * (u_touch.y - 0.5);
-                    
-                    vec4 tex = texture2D(u_texture, uv);
-                    tex.rgb *= vec3(sin(u_time * 2.0) * u_effectStrength + 1.0, cos(u_time) * u_effectStrength + 1.0, 1.0);
-                    gl_FragColor = tex;
-                }`
-            );
-        }
-        
-        function vidLoaded() {
-            this.volume(0);
-            this.hide();
-        }
+        videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
 </html>
+
