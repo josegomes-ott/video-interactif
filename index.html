@@ -12,7 +12,7 @@
             height: 100vh;
             object-fit: cover;
             filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
-            transition: filter 0.2s ease-in-out;
+            transition: filter 0.2s ease-in-out, transform 0.3s ease-in-out;
         }
     </style>
 </head>
@@ -34,19 +34,39 @@
             let x = event.clientX / window.innerWidth;
             let y = event.clientY / window.innerHeight;
             
-            hue = x * 360;
-            brightness = 1 + (y * 0.5);
-            contrast = 1 + (x * 0.5);
-            saturation = 1 + (y * 0.5);
+            hue = (Math.random() * 360) * x;  // Couleur aléatoire influencée par la position horizontale
+            brightness = 1 + (Math.random() * 0.5 * y);  // Variation aléatoire de luminosité avec hauteur
+            contrast = 1 + (Math.random() * 0.5 * x);
+            saturation = 1 + (Math.random() * 0.5 * y);
 
             videoElement.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hue}deg)`;
         }
 
+        function applyDistortion(event) {
+            let x = (event.clientX / window.innerWidth - 0.5) * 50;
+            let y = (event.clientY / window.innerHeight - 0.5) * 50;
+            videoElement.style.transform = `perspective(500px) rotateX(${y}deg) rotateY(${x}deg) scale(1.1)`;
+            setTimeout(() => { videoElement.style.transform = 'scale(1)'; }, 500);
+        }
+
+        function detectThreeFingers(event) {
+            if (event.touches.length === 3) {
+                applyDistortion(event.touches[0]);
+            }
+        }
+
         document.body.addEventListener('mousemove', applyEffects);
         document.body.addEventListener('click', changeVideo);
+        document.body.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            applyDistortion(event);
+        });
+        document.body.addEventListener('touchmove', (event) => {
+            applyEffects(event.touches[0]);
+        });
+        document.body.addEventListener('touchstart', detectThreeFingers);
         
         videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
 </html>
-
