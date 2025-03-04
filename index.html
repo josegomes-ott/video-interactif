@@ -19,6 +19,7 @@
         let touchX = 0, touchY = 0;
         let colorShift = 0;
         let distortion = 0;
+        let videoStarted = false;
         
         function preload() {
             videos.push(createVideo('video1.mp4', vidLoaded));
@@ -37,9 +38,15 @@
             
             currentVideo.show();
             currentVideo.loop();
+            currentVideo.volume(0);
         }
         
         function draw() {
+            if (!videoStarted) {
+                currentVideo.play();
+                videoStarted = true;
+            }
+            
             shaderGraphics.shader(myShader);
             myShader.setUniform("u_texture", currentVideo);
             myShader.setUniform("u_time", millis() / 1000);
@@ -62,6 +69,10 @@
             }
         }
         
+        function mousePressed() {
+            switchVideo();
+        }
+        
         function switchVideo() {
             currentVideo.hide();
             currentVideo.stop();
@@ -69,6 +80,7 @@
             currentVideo = random(videos);
             currentVideo.show();
             currentVideo.loop();
+            currentVideo.volume(0);
         }
         
         function setupShader() {
@@ -96,7 +108,6 @@
         function vidLoaded() {
             this.volume(0);
             this.hide();
-            this.play();
         }
     </script>
 </body>
