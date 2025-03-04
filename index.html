@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidéo Interactive</title>
+    <title>Vidéo Interactive Peinture</title>
     <style>
         body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
         video { 
@@ -60,7 +60,7 @@
         function detectThreeFingers(event) {
             if (event.touches.length === 3) {
                 for (let i = 0; i < event.touches.length; i++) {
-                    drawBrushStroke(event.touches[i].clientX, event.touches[i].clientY);
+                    drawTexturedSplash(event.touches[i].clientX, event.touches[i].clientY);
                 }
             }
         }
@@ -71,11 +71,18 @@
             }
         }
 
-        function drawBrushStroke(x, y) {
-            ctx.fillStyle = `hsla(${Math.random() * 360}, 100%, 50%, 0.8)`;
-            ctx.beginPath();
-            ctx.arc(x, y, 20 + Math.random() * 10, 0, Math.PI * 2);
-            ctx.fill();
+        function drawTexturedSplash(x, y) {
+            let splashSize = 50 + Math.random() * 50;
+            let rotation = Math.random() * 360;
+            let img = new Image();
+            img.src = 'splash_texture.png'; // Image de texture de peinture à l'huile
+            img.onload = function() {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rotation * Math.PI / 180);
+                ctx.drawImage(img, -splashSize / 2, -splashSize / 2, splashSize, splashSize);
+                ctx.restore();
+            }
         }
 
         function clearCanvas() {
