@@ -55,7 +55,8 @@
                 for (let i = 0; i < event.touches.length; i++) {
                     let x = event.touches[i].clientX;
                     let y = event.touches[i].clientY;
-                    paintPositions.push({ x, y, stuck: false });
+                    let color = getVideoPixelColor(x, y);
+                    paintPositions.push({ x, y, color, stuck: false });
                 }
             } else if (event.touches.length === 2) {
                 clearCanvas();
@@ -64,18 +65,25 @@
             }
         }
 
-        function drawTexturedSplash(x, y) {
+        function getVideoPixelColor(x, y) {
+            trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
+            let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
+            let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
+            let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
+            return `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, 0.8)`;
+        }
+
+        function drawTexturedSplash(x, y, color) {
             let splashSize = 50 + Math.random() * 50;
             let rotation = Math.random() * 360;
-            let img = new Image();
-            img.src = 'splash_texture.png'; // Texture peinture
-            img.onload = function() {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(rotation * Math.PI / 180);
-                ctx.drawImage(img, -splashSize / 2, -splashSize / 2, splashSize, splashSize);
-                ctx.restore();
-            }
+            ctx.fillStyle = color;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.beginPath();
+            ctx.arc(0, 0, splashSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
 
         function clearCanvas() {
@@ -116,7 +124,7 @@
         function updatePaint() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let p of paintPositions) {
-                drawTexturedSplash(p.x, p.y);
+                drawTexturedSplash(p.x, p.y, p.color);
             }
         }
 
