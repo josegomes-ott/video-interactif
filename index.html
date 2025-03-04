@@ -95,7 +95,7 @@
                     let x = event.touches[i].clientX;
                     let y = event.touches[i].clientY;
                     let color = getVideoPixelColor(x, y);
-                    let colorName = getColorName(color);
+                    let colorName = ntc.name(color)[1]; // Utilisation de la bibliothèque de correspondance de couleur
                     paintPositions.push({ x, y, color, colorName, stuck: false });
                 }
             } else if (touchCount === 2) {
@@ -112,15 +112,8 @@
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
-            return `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, 0.8)`;
-        }
-
-        function getColorName(color) {
-            let colorNames = {"#FF0000": "Red", "#00FF00": "Green", "#0000FF": "Blue", "#FFFF00": "Yellow", "#FFA500": "Orange", "#800080": "Purple", "#00FFFF": "Cyan"};
-            let hex = color.replace(/rgba?\((\d+), (\d+), (\d+).*/, (match, r, g, b) => {
-                return `#${((1 << 24) + (parseInt(r) << 16) + (parseInt(g) << 8) + parseInt(b)).toString(16).slice(1).toUpperCase()}`;
-            });
-            return colorNames[hex] || "Unknown";
+            let hex = `#${((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase()}`;
+            return hex;
         }
 
         function clearCanvas() {
@@ -152,5 +145,6 @@
         setInterval(updatePaint, 100);
         videoElement.src = videos[currentVideoIndex];
     </script>
+    <script src="https://unpkg.com/ntc@1.0.0/ntc.js"></script>
 </body>
 </html>
