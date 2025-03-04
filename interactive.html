@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidéo Interactive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script>
+        let videos = [];
+        let currentVideo;
+        let shaderGraphics;
+        let touchX = 0, touchY = 0;
+        
+        function preload() {
+            videos.push(createVideo('C:\Users\JG233094\OneDrive - RATP\Bureau\video1.mp4', vidLoaded));
+            videos.push(createVideo('C:\Users\JG233094\OneDrive - RATP\Bureau\video2.mp4', vidLoaded));
+            videos.push(createVideo('C:\Users\JG233094\OneDrive - RATP\Bureau\video3.mp4', vidLoaded));
+        }
+        
+        function setup() {
+            createCanvas(windowWidth, windowHeight, WEBGL);
+            shaderGraphics = createGraphics(width, height, WEBGL);
+            shaderGraphics.noStroke();
+            
+            currentVideo = random(videos);
+            currentVideo.loop();
+            currentVideo.hide();
+        }
+        
+        function draw() {
+            shaderGraphics.shader(myShader);
+            myShader.setUniform("u_texture", currentVideo);
+            myShader.setUniform("u_time", millis() / 1000);
+            myShader.setUniform("u_touch", [touchX / width, touchY / height]);
+            shaderGraphics.rect(0, 0, width, height);
+            image(shaderGraphics, -width / 2, -height / 2);
+        }
+        
+        function touchMoved() {
+            touchX = mouseX;
+            touchY = mouseY;
+            if (random() > 0.98) {
+                currentVideo = random(videos);
+                currentVideo.loop();
+            }
+        }
+        
+        let myShader;
+        function setupShader() {
+            myShader = shaderGraphics.createShader(
+                `precision mediump float;
+                varying vec2 vTexCoord;
+                uniform sampler2D u_texture;
+                uniform float u_time;
+                uniform vec2 u_touch;
+                void main() {
+                    vec2 uv = vTexCoord;
+                    float distortion = sin(uv.y * 10.0 + u_time) * 0.05;
+                    uv.x += distortion * (u_touch.x - 0.5);
+                    uv.y += distortion * (u_touch.y - 0.5);
+                    vec4 tex = texture2D(u_texture, uv);
+                    tex.rgb *= vec3(1.0, sin(u_time) * 0.5 + 0.5, cos(u_time) * 0.5 + 0.5);
+                    gl_FragColor = tex;
+                }`
+            );
+        }
+        
+        function vidLoaded() {
+            this.volume(0);
+            this.loop();
+            this.hide();
+        }
+    </script>
+</body>
+</html>
