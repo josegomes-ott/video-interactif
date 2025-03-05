@@ -82,10 +82,13 @@
 
         function toggleVideo() {
             if (videoElement.paused) {
+                videoElement.currentTime = videoCurrentTime;
                 videoElement.play();
             } else {
+                videoCurrentTime = videoElement.currentTime;
                 videoElement.pause();
             }
+            videoPaused = !videoPaused;
         }
 
         function detectTouches(event) {
@@ -112,22 +115,17 @@
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
-            return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+            return `#${((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase()}`;
         }
 
-        function getClosestColorName(rgb) {
+        function getClosestColorName(hex) {
             const namedColors = {
-                "Red": "rgb(255, 0, 0)", "Green": "rgb(0, 255, 0)", "Blue": "rgb(0, 0, 255)",
-                "Yellow": "rgb(255, 255, 0)", "Orange": "rgb(255, 165, 0)", "Purple": "rgb(128, 0, 128)",
-                "Cyan": "rgb(0, 255, 255)", "Pink": "rgb(255, 192, 203)", "White": "rgb(255, 255, 255)",
-                "Black": "rgb(0, 0, 0)", "Gray": "rgb(128, 128, 128)"
+                "#FF0000": "Red", "#00FF00": "Green", "#0000FF": "Blue",
+                "#FFFF00": "Yellow", "#FFA500": "Orange", "#800080": "Purple",
+                "#00FFFF": "Cyan", "#FFC0CB": "Pink", "#FFFFFF": "White",
+                "#000000": "Black", "#808080": "Gray"
             };
-            for (let name in namedColors) {
-                if (namedColors[name] === rgb) {
-                    return name;
-                }
-            }
-            return "Unknown";
+            return namedColors[hex] || "Unknown";
         }
 
         function clearCanvas() {
