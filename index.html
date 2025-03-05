@@ -33,7 +33,7 @@
             border-radius: 5px;
             display: none;
         }
-        #toggleColorName {
+        #toggleColorName, #uploadImage {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -45,6 +45,9 @@
             border-radius: 5px;
             z-index: 1000;
         }
+        #uploadImage {
+            right: 150px;
+        }
     </style>
 </head>
 <body>
@@ -53,6 +56,7 @@
     <canvas id="trackingCanvas" style="display: none;"></canvas>
     <div id="colorName"></div>
     <button id="toggleColorName">Nom des couleurs</button>
+    <input type="file" id="uploadImage" accept="image/*">
     
     <script>
         const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
@@ -63,6 +67,7 @@
         const trackingCtx = trackingCanvas.getContext('2d');
         const colorNameDiv = document.getElementById('colorName');
         const toggleColorNameButton = document.getElementById('toggleColorName');
+        const uploadImage = document.getElementById('uploadImage');
         let showColorName = false;
         let currentVideoIndex = Math.floor(Math.random() * videos.length);
         let paintPositions = [];
@@ -92,6 +97,7 @@
         }
 
         function detectTouches(event) {
+            event.preventDefault();
             let touchCount = event.touches.length;
             if (touchCount === 1) {
                 for (let i = 0; i < event.touches.length; i++) {
@@ -125,7 +131,7 @@
                 "#00FFFF": "Cyan", "#FFC0CB": "Pink", "#FFFFFF": "White",
                 "#000000": "Black", "#808080": "Gray"
             };
-            return namedColors[hex] || "Unknown";
+            return namedColors[hex] || hex;
         }
 
         function clearCanvas() {
@@ -153,7 +159,18 @@
             colorNameDiv.style.display = showColorName ? "block" : "none";
         });
 
-        document.body.addEventListener('touchstart', detectTouches);
+        uploadImage.addEventListener("change", (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => {
+                    videoElement.src = img.src;
+                };
+            }
+        });
+
+        document.body.addEventListener('touchstart', detectTouches, { passive: false });
         setInterval(updatePaint, 100);
         videoElement.src = videos[currentVideoIndex];
     </script>
