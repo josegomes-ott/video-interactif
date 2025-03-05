@@ -67,6 +67,7 @@
         let currentVideoIndex = Math.floor(Math.random() * videos.length);
         let paintPositions = [];
         let videoPaused = false;
+        let videoCurrentTime = 0;
         
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -81,8 +82,10 @@
 
         function toggleVideo() {
             if (videoPaused) {
+                videoElement.currentTime = videoCurrentTime;
                 videoElement.play();
             } else {
+                videoCurrentTime = videoElement.currentTime;
                 videoElement.pause();
             }
             videoPaused = !videoPaused;
