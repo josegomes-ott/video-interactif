@@ -81,14 +81,11 @@
         }
 
         function toggleVideo() {
-            if (videoPaused) {
-                videoElement.currentTime = videoCurrentTime;
+            if (videoElement.paused) {
                 videoElement.play();
             } else {
-                videoCurrentTime = videoElement.currentTime;
                 videoElement.pause();
             }
-            videoPaused = !videoPaused;
         }
 
         function detectTouches(event) {
@@ -115,30 +112,22 @@
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
-            return [pixelData[0], pixelData[1], pixelData[2]];
+            return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
         }
 
-        function getClosestColorName(rgbArray) {
+        function getClosestColorName(rgb) {
             const namedColors = {
-                "Red": [255, 0, 0], "Green": [0, 255, 0], "Blue": [0, 0, 255],
-                "Yellow": [255, 255, 0], "Orange": [255, 165, 0], "Purple": [128, 0, 128],
-                "Cyan": [0, 255, 255], "Pink": [255, 192, 203], "White": [255, 255, 255],
-                "Black": [0, 0, 0], "Gray": [128, 128, 128]
+                "Red": "rgb(255, 0, 0)", "Green": "rgb(0, 255, 0)", "Blue": "rgb(0, 0, 255)",
+                "Yellow": "rgb(255, 255, 0)", "Orange": "rgb(255, 165, 0)", "Purple": "rgb(128, 0, 128)",
+                "Cyan": "rgb(0, 255, 255)", "Pink": "rgb(255, 192, 203)", "White": "rgb(255, 255, 255)",
+                "Black": "rgb(0, 0, 0)", "Gray": "rgb(128, 128, 128)"
             };
-            let closestColor = "Unknown";
-            let closestDistance = Infinity;
             for (let name in namedColors) {
-                let dist = Math.sqrt(
-                    Math.pow(namedColors[name][0] - rgbArray[0], 2) +
-                    Math.pow(namedColors[name][1] - rgbArray[1], 2) +
-                    Math.pow(namedColors[name][2] - rgbArray[2], 2)
-                );
-                if (dist < closestDistance) {
-                    closestDistance = dist;
-                    closestColor = name;
+                if (namedColors[name] === rgb) {
+                    return name;
                 }
             }
-            return closestColor;
+            return "Unknown";
         }
 
         function clearCanvas() {
@@ -150,7 +139,7 @@
         function updatePaint() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let p of paintPositions) {
-                ctx.fillStyle = `rgb(${p.color[0]}, ${p.color[1]}, ${p.color[2]})`;
+                ctx.fillStyle = p.color;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
                 ctx.fill();
