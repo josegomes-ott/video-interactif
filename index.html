@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidéo Interactive Peinture Suivante</title>
+    <title>Vidéo Interactive & Analyse des Couleurs</title>
     <style>
         body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        video { 
+        video, img {
             position: absolute;
-            width: 90vw; 
+            width: 90vw;
             height: 90vh;
             object-fit: cover;
             filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
@@ -52,6 +52,7 @@
 </head>
 <body>
     <video id="video" autoplay loop muted></video>
+    <img id="image" style="display: none;">
     <canvas id="paintCanvas"></canvas>
     <canvas id="trackingCanvas" style="display: none;"></canvas>
     <div id="colorName"></div>
@@ -61,6 +62,7 @@
     <script>
         const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
         const videoElement = document.getElementById('video');
+        const imageElement = document.getElementById('image');
         const canvas = document.getElementById('paintCanvas');
         const trackingCanvas = document.getElementById('trackingCanvas');
         const ctx = canvas.getContext('2d');
@@ -73,6 +75,7 @@
         let paintPositions = [];
         let videoPaused = false;
         let videoCurrentTime = 0;
+        let isImageMode = false;
         
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -80,20 +83,24 @@
         trackingCanvas.height = 240;
         
         function changeVideo() {
-            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-            videoElement.src = videos[currentVideoIndex];
-            clearCanvas();
+            if (!isImageMode) {
+                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+                videoElement.src = videos[currentVideoIndex];
+                clearCanvas();
+            }
         }
 
         function toggleVideo() {
-            if (videoElement.paused) {
-                videoElement.currentTime = videoCurrentTime;
-                videoElement.play();
-            } else {
-                videoCurrentTime = videoElement.currentTime;
-                videoElement.pause();
+            if (videoElement.style.display !== "none") {
+                if (videoElement.paused) {
+                    videoElement.currentTime = videoCurrentTime;
+                    videoElement.play();
+                } else {
+                    videoCurrentTime = videoElement.currentTime;
+                    videoElement.pause();
+                }
+                videoPaused = !videoPaused;
             }
-            videoPaused = !videoPaused;
         }
 
         function detectTouches(event) {
@@ -103,7 +110,7 @@
                 for (let i = 0; i < event.touches.length; i++) {
                     let x = event.touches[i].clientX;
                     let y = event.touches[i].clientY;
-                    let color = getVideoPixelColor(x, y);
+                    let color = getPixelColor(x, y);
                     let colorName = getClosestColorName(color);
                     paintPositions.push({ x, y, color, colorName });
                 }
@@ -116,8 +123,13 @@
             }
         }
 
-        function getVideoPixelColor(x, y) {
-            trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
+        function getPixelColor(x, y) {
+            trackingCtx.clearRect(0, 0, trackingCanvas.width, trackingCanvas.height);
+            if (isImageMode) {
+                trackingCtx.drawImage(imageElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
+            } else {
+                trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
+            }
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
@@ -162,11 +174,10 @@
         uploadImage.addEventListener("change", (event) => {
             const file = event.target.files[0];
             if (file) {
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                img.onload = () => {
-                    videoElement.src = img.src;
-                };
+                isImageMode = true;
+                imageElement.src = URL.createObjectURL(file);
+                imageElement.style.display = "block";
+                videoElement.style.display = "none";
             }
         });
 
