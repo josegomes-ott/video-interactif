@@ -32,25 +32,24 @@
             font-size: 18px;
             border-radius: 5px;
             display: none;
+            z-index: 1000;
         }
-        #toggleColorName, #uploadImage, #returnToVideo {
+        .controls {
             position: absolute;
             top: 10px;
             right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .controls button, .controls input {
             padding: 10px;
             background: white;
             border: none;
             cursor: pointer;
             font-size: 16px;
             border-radius: 5px;
-            z-index: 1000;
-        }
-        #uploadImage {
-            right: 150px;
-        }
-        #returnToVideo {
-            right: 290px;
-            display: none;
         }
     </style>
 </head>
@@ -60,9 +59,11 @@
     <canvas id="paintCanvas"></canvas>
     <canvas id="trackingCanvas" style="display: none;"></canvas>
     <div id="colorName"></div>
-    <button id="toggleColorName">Nom des couleurs</button>
-    <input type="file" id="uploadImage" accept="image/*">
-    <button id="returnToVideo">Revenir à la vidéo</button>
+    <div class="controls">
+        <button id="toggleColorName">Nom des couleurs</button>
+        <input type="file" id="uploadImage" accept="image/*">
+        <button id="returnToVideo">Revenir à la vidéo</button>
+    </div>
     
     <script>
         const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
@@ -162,7 +163,7 @@
             for (let p of paintPositions) {
                 ctx.fillStyle = p.color;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
+                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
                 ctx.fill();
                 if (showColorName) {
                     colorNameDiv.innerText = p.colorName;
@@ -171,7 +172,10 @@
             }
         }
 
-        returnToVideoButton.addEventListener("click", returnToVideo);
+        document.body.addEventListener('touchstart', detectTouches, { passive: false });
+        toggleColorNameButton.addEventListener("click", () => {
+            showColorName = !showColorName;
+        });
         uploadImage.addEventListener("change", (event) => {
             const file = event.target.files[0];
             if (file) {
@@ -182,8 +186,6 @@
                 returnToVideoButton.style.display = "block";
             }
         });
-
-        document.body.addEventListener('touchstart', detectTouches, { passive: false });
         setInterval(updatePaint, 100);
         videoElement.src = videos[currentVideoIndex];
     </script>
