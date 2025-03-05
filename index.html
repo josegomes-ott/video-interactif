@@ -10,7 +10,7 @@
             position: absolute;
             width: 90vw;
             height: 90vh;
-            object-fit: cover;
+            object-fit: contain;
             filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
             transition: filter 0.2s ease-in-out;
         }
@@ -33,7 +33,7 @@
             border-radius: 5px;
             display: none;
         }
-        #toggleColorName, #uploadImage {
+        #toggleColorName, #uploadImage, #returnToVideo {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -48,6 +48,10 @@
         #uploadImage {
             right: 150px;
         }
+        #returnToVideo {
+            right: 290px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -58,6 +62,7 @@
     <div id="colorName"></div>
     <button id="toggleColorName">Nom des couleurs</button>
     <input type="file" id="uploadImage" accept="image/*">
+    <button id="returnToVideo">Revenir à la vidéo</button>
     
     <script>
         const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
@@ -70,6 +75,7 @@
         const colorNameDiv = document.getElementById('colorName');
         const toggleColorNameButton = document.getElementById('toggleColorName');
         const uploadImage = document.getElementById('uploadImage');
+        const returnToVideoButton = document.getElementById('returnToVideo');
         let showColorName = false;
         let currentVideoIndex = Math.floor(Math.random() * videos.length);
         let paintPositions = [];
@@ -82,22 +88,21 @@
         trackingCanvas.width = 320;
         trackingCanvas.height = 240;
         
-        function changeVideo() {
-            if (!isImageMode) {
-                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-                videoElement.src = videos[currentVideoIndex];
-                clearCanvas();
-            }
+        function returnToVideo() {
+            isImageMode = false;
+            imageElement.style.display = "none";
+            videoElement.style.display = "block";
+            returnToVideoButton.style.display = "none";
         }
 
         function toggleVideo() {
-            if (videoElement.style.display !== "none") {
-                if (videoElement.paused) {
-                    videoElement.currentTime = videoCurrentTime;
-                    videoElement.play();
-                } else {
+            if (!isImageMode) {
+                if (!videoElement.paused) {
                     videoCurrentTime = videoElement.currentTime;
                     videoElement.pause();
+                } else {
+                    videoElement.currentTime = videoCurrentTime;
+                    videoElement.play();
                 }
                 videoPaused = !videoPaused;
             }
@@ -117,7 +122,7 @@
             } else if (touchCount === 2) {
                 clearCanvas();
             } else if (touchCount === 3) {
-                changeVideo();
+                if (!isImageMode) changeVideo();
             } else if (touchCount === 4) {
                 toggleVideo();
             }
@@ -166,11 +171,7 @@
             }
         }
 
-        toggleColorNameButton.addEventListener("click", () => {
-            showColorName = !showColorName;
-            colorNameDiv.style.display = showColorName ? "block" : "none";
-        });
-
+        returnToVideoButton.addEventListener("click", returnToVideo);
         uploadImage.addEventListener("change", (event) => {
             const file = event.target.files[0];
             if (file) {
@@ -178,6 +179,7 @@
                 imageElement.src = URL.createObjectURL(file);
                 imageElement.style.display = "block";
                 videoElement.style.display = "none";
+                returnToVideoButton.style.display = "block";
             }
         });
 
