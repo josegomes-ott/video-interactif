@@ -121,16 +121,14 @@
             event.preventDefault();
             let touchCount = event.touches.length;
             if (touchCount === 1) {
-                for (let i = 0; i < event.touches.length; i++) {
-                    let x = event.touches[i].clientX;
-                    let y = event.touches[i].clientY;
-                    let color = getPixelColor(x, y);
-                    let colorName = getClosestColorName(color);
-                    paintPositions.push({ x, y, color, colorName });
-                    if (showColorName) {
-                        colorNameDiv.innerText = colorName;
-                        colorNameDiv.style.display = "block";
-                    }
+                let x = event.touches[0].clientX;
+                let y = event.touches[0].clientY;
+                let color = getPixelColor(x, y);
+                let colorName = getClosestColorName(color);
+                paintPositions.push({ x, y, color, colorName });
+                if (showColorName) {
+                    colorNameDiv.innerText = colorName;
+                    colorNameDiv.style.display = "block";
                 }
             } else if (touchCount === 2) {
                 clearCanvas();
@@ -166,6 +164,13 @@
         });
 
         document.body.addEventListener('touchstart', detectTouches, { passive: false });
+        document.body.addEventListener('click', (event) => {
+            let x = event.clientX;
+            let y = event.clientY;
+            let color = getPixelColor(x, y);
+            colorNameDiv.innerText = color;
+            colorNameDiv.style.display = "block";
+        });
         videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
