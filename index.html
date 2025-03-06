@@ -155,6 +155,11 @@
             showColorName = !showColorName;
             colorNameDiv.style.display = showColorName ? "block" : "none";
         });
+        toggleColorNameButton.addEventListener("touchstart", (event) => {
+            event.preventDefault();
+            showColorName = !showColorName;
+            colorNameDiv.style.display = showColorName ? "block" : "none";
+        });
         
         uploadImage.addEventListener("change", (event) => {
             const file = event.target.files[0];
@@ -168,6 +173,10 @@
         });
 
         returnToVideoButton.addEventListener("click", returnToVideo);
+        returnToVideoButton.addEventListener("touchstart", (event) => {
+            event.preventDefault();
+            returnToVideo();
+        });
         document.body.addEventListener('touchstart', detectTouches, { passive: false });
         videoElement.src = videos[currentVideoIndex];
     </script>
