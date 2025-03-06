@@ -104,19 +104,6 @@
             }
         }
 
-        function toggleVideo() {
-            if (mode === "video") {
-                if (!videoElement.paused) {
-                    videoCurrentTime = videoElement.currentTime;
-                    videoElement.pause();
-                } else {
-                    videoElement.currentTime = videoCurrentTime;
-                    videoElement.play();
-                }
-                videoPaused = !videoPaused;
-            }
-        }
-
         function detectTouches(event) {
             event.preventDefault();
             let touchCount = event.touches.length;
@@ -129,10 +116,8 @@
                 drawPaint();
             } else if (touchCount === 2) {
                 clearCanvas();
-            } else if (touchCount === 3) {
+            } else if (touchCount === 3 && mode === "video") {
                 changeVideo();
-            } else if (touchCount === 4) {
-                toggleVideo();
             }
         }
 
@@ -154,10 +139,6 @@
             }
         }
 
-        toggleColorNameButton.addEventListener("click", () => {
-            showColorName = !showColorName;
-            colorNameDiv.style.display = showColorName ? "block" : "none";
-        });
         uploadImage.addEventListener("change", (event) => {
             const file = event.target.files[0];
             if (file) {
@@ -171,9 +152,6 @@
 
         returnToVideoButton.addEventListener("click", returnToVideo);
         document.body.addEventListener('touchstart', detectTouches, { passive: false });
-        document.body.addEventListener('mousedown', (event) => {
-            detectTouches({ preventDefault: () => {}, touches: [{ clientX: event.clientX, clientY: event.clientY }] });
-        });
         videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
