@@ -6,7 +6,7 @@
     <title>Vidéo Interactive & Analyse des Couleurs</title>
     <style>
         body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        video, img {
+        video {
             position: absolute;
             max-width: 90vw;
             max-height: 90vh;
@@ -43,7 +43,7 @@
             gap: 10px;
             z-index: 1000;
         }
-        .controls button, .controls input {
+        .controls button {
             padding: 10px;
             background: white;
             border: none;
@@ -55,51 +55,35 @@
 </head>
 <body>
     <video id="video" autoplay loop muted></video>
-    <img id="image" style="display: none;">
     <canvas id="paintCanvas"></canvas>
     <canvas id="trackingCanvas" style="display: none;"></canvas>
     <div id="colorName"></div>
     <div class="controls">
         <button id="toggleColorName">Nom des couleurs</button>
-        <input type="file" id="uploadImage" accept="image/*">
-        <button id="returnToVideo" style="display: none;">Revenir à la vidéo</button>
     </div>
     
     <script>
         const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
         const videoElement = document.getElementById('video');
-        const imageElement = document.getElementById('image');
         const canvas = document.getElementById('paintCanvas');
         const trackingCanvas = document.getElementById('trackingCanvas');
         const ctx = canvas.getContext('2d');
         const trackingCtx = trackingCanvas.getContext('2d');
         const colorNameDiv = document.getElementById('colorName');
         const toggleColorNameButton = document.getElementById('toggleColorName');
-        const uploadImage = document.getElementById('uploadImage');
-        const returnToVideoButton = document.getElementById('returnToVideo');
         let showColorName = false;
         let currentVideoIndex = Math.floor(Math.random() * videos.length);
         let paintPositions = [];
-        let mode = "video"; // 'video' ou 'image'
         
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         trackingCanvas.width = 320;
         trackingCanvas.height = 240;
         
-        function returnToVideo() {
-            mode = "video";
-            imageElement.style.display = "none";
-            videoElement.style.display = "block";
-            returnToVideoButton.style.display = "none";
-        }
-
         function changeVideo() {
-            if (mode === "video") {
-                currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-                videoElement.src = videos[currentVideoIndex];
-                clearCanvas();
-            }
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            videoElement.src = videos[currentVideoIndex];
+            clearCanvas();
         }
 
         function detectTouches(event) {
@@ -113,13 +97,13 @@
                 drawPaint();
             } else if (touchCount === 2) {
                 clearCanvas();
-            } else if (touchCount === 3 && mode === "video") {
+            } else if (touchCount === 3) {
                 changeVideo();
             }
         }
 
         function getPixelColor(x, y) {
-            trackingCtx.drawImage(mode === "image" ? imageElement : videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
+            trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
@@ -136,21 +120,18 @@
             }
         }
 
-        uploadImage.addEventListener("change", (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                mode = "image";
-                imageElement.src = URL.createObjectURL(file);
-                imageElement.style.display = "block";
-                videoElement.style.display = "none";
-                returnToVideoButton.style.display = "block";
-            }
-        });
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            paintPositions = [];
+        }
 
-        returnToVideoButton.addEventListener("click", returnToVideo);
+        toggleColorNameButton.addEventListener("click", () => {
+            showColorName = !showColorName;
+            colorNameDiv.style.display = showColorName ? "block" : "none";
+        });
+        
         document.body.addEventListener('touchstart', detectTouches, { passive: false });
         videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
 </html>
-
