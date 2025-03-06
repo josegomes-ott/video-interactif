@@ -20,6 +20,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
+            touch-action: none;
         }
         #colorName {
             position: absolute;
@@ -170,6 +171,9 @@
 
         returnToVideoButton.addEventListener("click", returnToVideo);
         document.body.addEventListener('touchstart', detectTouches, { passive: false });
+        document.body.addEventListener('mousedown', (event) => {
+            detectTouches({ preventDefault: () => {}, touches: [{ clientX: event.clientX, clientY: event.clientY }] });
+        });
         videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
