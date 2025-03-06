@@ -124,12 +124,6 @@
                 for (let i = 0; i < event.touches.length; i++) {
                     let x = event.touches[i].clientX;
                     let y = event.touches[i].clientY;
-                    if (isImageMode) {
-                        const rect = imageElement.getBoundingClientRect();
-                        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-                            return;
-                        }
-                    }
                     let color = getPixelColor(x, y);
                     let colorName = getClosestColorName(color);
                     paintPositions.push({ x, y, color, colorName });
@@ -144,19 +138,22 @@
         }
 
         function getPixelColor(x, y) {
-            trackingCtx.clearRect(0, 0, trackingCanvas.width, trackingCanvas.height);
-            if (isImageMode) {
-                trackingCtx.drawImage(imageElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
-            } else {
-                trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
-            }
+            trackingCtx.drawImage(isImageMode ? imageElement : videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
             return `#${((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase()}`;
         }
 
-        returnToVideoButton.addEventListener("click", returnToVideo);
+        function getClosestColorName(hex) {
+            return hex;
+        }
+
+        toggleColorNameButton.addEventListener("click", () => {
+            showColorName = !showColorName;
+            colorNameDiv.style.display = showColorName ? "block" : "none";
+        });
+        
         uploadImage.addEventListener("change", (event) => {
             const file = event.target.files[0];
             if (file) {
@@ -167,6 +164,7 @@
                 returnToVideoButton.style.display = "block";
             }
         });
+
         document.body.addEventListener('touchstart', detectTouches, { passive: false });
         videoElement.src = videos[currentVideoIndex];
     </script>
