@@ -20,7 +20,6 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            pointer-events: none;
         }
         #colorName {
             position: absolute;
@@ -62,7 +61,7 @@
     <div class="controls">
         <button id="toggleColorName">Nom des couleurs</button>
         <input type="file" id="uploadImage" accept="image/*">
-        <button id="returnToVideo">Revenir à la vidéo</button>
+        <button id="returnToVideo" style="display: none;">Revenir à la vidéo</button>
     </div>
     
     <script>
@@ -82,7 +81,7 @@
         let paintPositions = [];
         let videoPaused = false;
         let videoCurrentTime = 0;
-        let isImageMode = false;
+        let mode = "video"; // 'video' ou 'image'
         
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -90,14 +89,14 @@
         trackingCanvas.height = 240;
         
         function returnToVideo() {
-            isImageMode = false;
+            mode = "video";
             imageElement.style.display = "none";
             videoElement.style.display = "block";
             returnToVideoButton.style.display = "none";
         }
 
         function changeVideo() {
-            if (!isImageMode) {
+            if (mode === "video") {
                 currentVideoIndex = (currentVideoIndex + 1) % videos.length;
                 videoElement.src = videos[currentVideoIndex];
                 clearCanvas();
@@ -105,13 +104,11 @@
         }
 
         function toggleVideo() {
-            if (!isImageMode) {
-                if (!videoElement.paused) {
-                    videoCurrentTime = videoElement.currentTime;
-                    videoElement.pause();
-                } else {
-                    videoElement.currentTime = videoCurrentTime;
+            if (mode === "video") {
+                if (videoElement.paused) {
                     videoElement.play();
+                } else {
+                    videoElement.pause();
                 }
                 videoPaused = !videoPaused;
             }
@@ -126,10 +123,7 @@
                 let color = getPixelColor(x, y);
                 let colorName = getClosestColorName(color);
                 paintPositions.push({ x, y, color, colorName });
-                if (showColorName) {
-                    colorNameDiv.innerText = colorName;
-                    colorNameDiv.style.display = "block";
-                }
+                drawPaint();
             } else if (touchCount === 2) {
                 clearCanvas();
             } else if (touchCount === 3) {
@@ -140,11 +134,21 @@
         }
 
         function getPixelColor(x, y) {
-            trackingCtx.drawImage(isImageMode ? imageElement : videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
+            trackingCtx.drawImage(mode === "image" ? imageElement : videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
             return `#${((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase()}`;
+        }
+
+        function drawPaint() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let p of paintPositions) {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
         toggleColorNameButton.addEventListener("click", () => {
@@ -155,7 +159,7 @@
         uploadImage.addEventListener("change", (event) => {
             const file = event.target.files[0];
             if (file) {
-                isImageMode = true;
+                mode = "image";
                 imageElement.src = URL.createObjectURL(file);
                 imageElement.style.display = "block";
                 videoElement.style.display = "none";
@@ -163,14 +167,8 @@
             }
         });
 
+        returnToVideoButton.addEventListener("click", returnToVideo);
         document.body.addEventListener('touchstart', detectTouches, { passive: false });
-        document.body.addEventListener('click', (event) => {
-            let x = event.clientX;
-            let y = event.clientY;
-            let color = getPixelColor(x, y);
-            colorNameDiv.innerText = color;
-            colorNameDiv.style.display = "block";
-        });
         videoElement.src = videos[currentVideoIndex];
     </script>
 </body>
