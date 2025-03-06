@@ -80,8 +80,6 @@
         let showColorName = false;
         let currentVideoIndex = Math.floor(Math.random() * videos.length);
         let paintPositions = [];
-        let videoPaused = false;
-        let videoCurrentTime = 0;
         let mode = "video"; // 'video' ou 'image'
         
         canvas.width = window.innerWidth;
@@ -111,8 +109,7 @@
                 let x = event.touches[0].clientX;
                 let y = event.touches[0].clientY;
                 let color = getPixelColor(x, y);
-                let colorName = getClosestColorName(color);
-                paintPositions.push({ x, y, color, colorName });
+                paintPositions.push({ x, y, color });
                 drawPaint();
             } else if (touchCount === 2) {
                 clearCanvas();
@@ -126,7 +123,7 @@
             let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
             let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
             let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
-            return `#${((1 << 24) + (pixelData[0] << 16) + (pixelData[1] << 8) + pixelData[2]).toString(16).slice(1).toUpperCase()}`;
+            return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
         }
 
         function drawPaint() {
@@ -156,3 +153,4 @@
     </script>
 </body>
 </html>
+
