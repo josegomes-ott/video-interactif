@@ -83,7 +83,7 @@
     let showColorName = false;
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
     let paintPositions = [];
-    let gestureLock = false; // Empêche le déclenchement multiple d'un geste
+    let gestureLock = false;
     
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -175,7 +175,7 @@
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour le bloc d'affichage (en bas à droite) avec pour chaque pastille la couleur et son mélange détaillé
+    // Met à jour le bloc d'affichage en bas à droite avec pour chaque pastille la couleur et son mélange détaillé
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -201,20 +201,17 @@
       }
     }
     
-    // Gestion des gestes sur le canvas avec un verrou temporaire (gestureLock) pour éviter les déclenchements multiples
+    // Écouteur sur le canvas pour gérer les gestes tactiles
     canvas.addEventListener('touchstart', function(event) {
       event.preventDefault();
-      if (gestureLock) return;
       let touchCount = event.touches.length;
       if (touchCount === 3) {
         changeVideo();
         gestureLock = true;
-        setTimeout(() => { gestureLock = false; }, 500);
       } else if (touchCount === 2) {
         clearCanvas();
         if (showColorName) { colorNameDiv.innerHTML = ""; }
         gestureLock = true;
-        setTimeout(() => { gestureLock = false; }, 500);
       } else if (touchCount === 1) {
         let x = event.touches[0].clientX;
         let y = event.touches[0].clientY;
@@ -224,7 +221,22 @@
       }
     }, { passive: false });
     
-    // Gestion du clic souris sur le canvas
+    // Ajout d'un écouteur sur touchmove pour détecter si trois doigts sont en mouvement
+    canvas.addEventListener('touchmove', function(event) {
+      if (!gestureLock && event.touches.length === 3) {
+        changeVideo();
+        gestureLock = true;
+      }
+    }, { passive: false });
+    
+    // Réinitialise le verrou dès que tous les doigts sont levés
+    canvas.addEventListener('touchend', function(event) {
+      if (event.touches.length === 0) {
+        gestureLock = false;
+      }
+    }, { passive: false });
+    
+    // Gestion des clics souris sur le canvas
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -233,7 +245,7 @@
       drawPaint();
     });
     
-    // Gestion du bouton pour le tactile : éviter que le toucher sur le bouton ne déclenche une action sur le canvas
+    // Gestion du bouton pour le tactile : empêcher le déclenchement d'un geste sur le canvas
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
       e.preventDefault();
