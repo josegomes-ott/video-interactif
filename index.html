@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vidéo Interactive & Analyse des Couleurs</title>
-  <!-- Inclusion de chroma.js depuis CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
   <style>
     body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
@@ -13,6 +12,7 @@
     #colorName { position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.7); color: white; padding: 10px; font-size: 18px; border-radius: 5px; display: none; z-index: 1000; }
     .controls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
     .controls button { padding: 10px; background: white; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; }
+    #loading { position: absolute; top: 10px; left: 10px; color: white; font-size: 18px; z-index: 1000; }
   </style>
 </head>
 <body>
@@ -23,9 +23,9 @@
   <div class="controls">
     <button id="toggleColorName">Nom des couleurs</button>
   </div>
+  <div id="loading">Chargement de la base de couleurs...</div>
   
   <script>
-    // Liste de vidéos à afficher
     const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
     const videoElement = document.getElementById('video');
     const canvas = document.getElementById('paintCanvas');
@@ -34,19 +34,21 @@
     const trackingCtx = trackingCanvas.getContext('2d');
     const colorNameDiv = document.getElementById('colorName');
     const toggleColorNameButton = document.getElementById('toggleColorName');
-    
+    const loadingDiv = document.getElementById('loading');
+
     let showColorName = false;
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
     let paintPositions = [];
-    let gestureLock = false;
-    let oilPaintColors = []; // Base de données chargée depuis le fichier JSON
-    
+    let gestureLock = false; 
+    let oilPaintColors = []; // La base de données de couleurs
+    let baseLoaded = false;  // Indicateur de chargement de la base
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     trackingCanvas.width = 320;
     trackingCanvas.height = 240;
-    
-    // Définition des couleurs de base
+
+    // Couleurs de base pour le calcul des mélanges
     const baseColors = {
       "rouge": { r: 255, g: 0, b: 0 },
       "jaune": { r: 255, g: 255, b: 0 },
@@ -54,8 +56,8 @@
       "blanc": { r: 255, g: 255, b: 255 },
       "noir": { r: 0, g: 0, b: 0 }
     };
-    
-    // Calculer la couleur résultante en RGB à partir des proportions
+
+    // Fonction qui calcule la couleur résultante en RGB à partir des proportions
     function computeColorFromMix(proportions) {
       let total = 0, sumR = 0, sumG = 0, sumB = 0;
       for (let base in proportions) {
@@ -74,29 +76,33 @@
         b: Math.round(sumB / total)
       };
     }
-    
-    // Formater les proportions en une chaîne de caractères
+
+    // Fonction qui formate les proportions en chaîne
     function formatProportions(proportions) {
       return Object.entries(proportions)
                    .map(([base, qty]) => `${base}: ${qty}`)
                    .join(", ");
     }
-    
-    // Chargement du fichier JSON et enrichissement des objets avec la couleur Lab
+
+    // Chargement du fichier JSON
     fetch('colors.json')
       .then(response => response.json())
       .then(data => {
-        // Pour chaque entrée, calculez la couleur RGB puis la conversion en Lab avec chroma.js
+        // Pour chaque entrée, calculer la couleur RGB et convertir en Lab
         oilPaintColors = data.map(entry => {
           let computed = computeColorFromMix(entry.proportions);
           let lab = chroma(`rgb(${computed.r}, ${computed.g}, ${computed.b})`).lab();
           return { ...entry, r: computed.r, g: computed.g, b: computed.b, lab: lab };
         });
+        baseLoaded = true;
+        loadingDiv.textContent = "Base de couleurs chargée";
         console.log("Couleurs chargées :", oilPaintColors);
       })
-      .catch(error => console.error("Erreur lors du chargement du fichier JSON :", error));
-    
-    // Changement de vidéo aléatoire (3 doigts)
+      .catch(error => {
+        console.error("Erreur lors du chargement du fichier JSON :", error);
+        loadingDiv.textContent = "Erreur lors du chargement de la base de couleurs";
+      });
+
     function changeVideo() {
       let newIndex = Math.floor(Math.random() * videos.length);
       if (videos.length > 1 && newIndex === currentVideoIndex) {
@@ -109,13 +115,12 @@
       if (showColorName) { colorNameDiv.innerHTML = ""; }
       console.log("Vidéo changée, nouvel index :", currentVideoIndex);
     }
-    
+
     function clearCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       paintPositions = [];
     }
-    
-    // Récupère la couleur d'un pixel de la vidéo
+
     function getPixelColor(x, y) {
       const rect = videoElement.getBoundingClientRect();
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
@@ -131,17 +136,16 @@
       let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
       return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
     }
-    
-    // Comparaison en espace Lab (Delta E)
+
+    // Comparaison en espace Lab avec Delta E
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
-      if (oilPaintColors.length === 0) return rgb + " - Base non chargée";
+      if (!baseLoaded) return rgb + " - Base non chargée";
       let capturedLab = chroma(rgb).lab();
       let closest = null;
       let minDeltaE = Infinity;
       oilPaintColors.forEach(color => {
-        // Assurez-vous que la propriété lab existe
         if (!color.lab) return;
         let deltaE = chroma.deltaE(capturedLab, color.lab);
         if (deltaE < minDeltaE) {
@@ -149,19 +153,19 @@
           closest = color;
         }
       });
-      // Vous pouvez ajuster ce seuil selon vos préférences (par exemple, 10 est déjà une tolérance fine)
+      // Seuil de tolérance en Delta E (par exemple 10)
       if (minDeltaE > 10) {  
         return rgb + " - Couleur non référencée (ΔE=" + minDeltaE.toFixed(1) + ")";
       }
       let propString = formatProportions(closest.proportions);
       return closest ? `${closest.colorName} (${closest.comment}) - Proportions: ${propString} (ΔE=${minDeltaE.toFixed(1)})` : rgb;
     }
-    
+
     function getColorName(rgb) {
       let oilMix = getOilPaintMix(rgb);
       return `${rgb} - ${oilMix}`;
     }
-    
+
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -173,7 +177,7 @@
       }
       colorNameDiv.innerHTML = html;
     }
-    
+
     function drawPaint() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let p of paintPositions) {
@@ -184,7 +188,7 @@
       }
       if (showColorName) { updateColorNames(); }
     }
-    
+
     canvas.addEventListener('touchstart', function(event) {
       event.preventDefault();
       if (gestureLock) return;
@@ -206,7 +210,7 @@
         drawPaint();
       }
     }, { passive: false });
-    
+
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -214,7 +218,7 @@
       paintPositions.push({ x, y, color });
       drawPaint();
     });
-    
+
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
       e.preventDefault();
@@ -224,13 +228,12 @@
       e.preventDefault();
       toggleColorNameButton.click();
     });
-    
     toggleColorNameButton.addEventListener("click", () => {
       showColorName = !showColorName;
       colorNameDiv.style.display = showColorName ? "block" : "none";
       if (showColorName) { updateColorNames(); }
     });
-    
+
     videoElement.src = videos[currentVideoIndex];
   </script>
 </body>
