@@ -160,7 +160,7 @@
         }
       });
       // Optionnel : si la distance est trop grande, on peut considérer que la nuance n'est pas référencée.
-      if (minDist > 100) {
+      if (minDist > 200) {
         return rgb + " - Couleur non référencée";
       }
       return closest ? closest.name + " (" + closest.mix + ")" : rgb;
