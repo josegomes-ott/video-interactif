@@ -40,7 +40,7 @@
       resultDiv.innerHTML = `Couleur extraite : #${hex} (${rgb}). Recherche en cours...`;
       
       // Remplacez <votre-projet> par l'URL de votre projet Glitch
-      fetch(`https://<votre-projet>.glitch.me/api/colors/compare?hex=${hex}`)
+      fetch(`https://mellow-chalk-neon.glitch.me/api/colors/compare?hex=${hex}`)
         .then(response => response.json())
         .then(data => {
           if (data.match) {
