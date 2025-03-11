@@ -86,11 +86,8 @@
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
     let paintPositions = [];
     let gestureLock = false; // Pour éviter les déclenchements multiples
+    let oilPaintColors = []; // La base de données sera chargée depuis le fichier JSON
     
-    // La base de données des couleurs sera chargée depuis le fichier JSON
-    let oilPaintColors = [];
-    
-    // Dimensionnement des canvas
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     trackingCanvas.width = 320;
@@ -105,7 +102,7 @@
       })
       .catch(error => console.error("Erreur lors du chargement du fichier JSON :", error));
     
-    // Fonction pour changer de vidéo de façon aléatoire (geste à 3 doigts)
+    // Changement de vidéo aléatoire avec 3 doigts
     function changeVideo() {
       let newIndex = Math.floor(Math.random() * videos.length);
       if (videos.length > 1 && newIndex === currentVideoIndex) {
@@ -121,13 +118,12 @@
       console.log("Vidéo changée, nouvel index :", currentVideoIndex);
     }
     
-    // Efface le canvas et réinitialise les positions de peinture
     function clearCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       paintPositions = [];
     }
     
-    // Récupère la couleur d'un pixel en fonction de la position dans la vidéo affichée
+    // Récupère la couleur d'un pixel dans la zone affichée de la vidéo
     function getPixelColor(x, y) {
       const rect = videoElement.getBoundingClientRect();
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
@@ -148,6 +144,8 @@
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
+      // Si la base de données n'est pas chargée, retourner la valeur originale
+      if (oilPaintColors.length === 0) return rgb;
       let r = parseInt(parts[0]), g = parseInt(parts[1]), b = parseInt(parts[2]);
       let closest = null;
       let minDist = Infinity;
@@ -161,6 +159,10 @@
           closest = color;
         }
       });
+      // Optionnel : si la distance est trop grande, on peut considérer que la nuance n'est pas référencée.
+      if (minDist > 100) {
+        return rgb + " - Couleur non référencée";
+      }
       return closest ? closest.name + " (" + closest.mix + ")" : rgb;
     }
     
@@ -170,7 +172,7 @@
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour le bloc d'affichage avec une pastille et le texte associé pour chaque couleur sélectionnée
+    // Met à jour le bloc d'affichage (en bas à droite) avec une pastille et le texte pour chaque couleur sélectionnée
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -183,7 +185,6 @@
       colorNameDiv.innerHTML = html;
     }
     
-    // Dessine sur le canvas toutes les pastilles et met à jour l'affichage des noms de couleurs si nécessaire
     function drawPaint() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let p of paintPositions) {
