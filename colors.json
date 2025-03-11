@@ -1,1 +1,20 @@
-
+[
+  { "name": "Rouge Cadmium Vif", "r": 227, "g": 0, "b": 34, "mix": "Mélange de pigments cadmium pour obtenir un rouge vif" },
+  { "name": "Rouge Alizarine Profond", "r": 180, "g": 0, "b": 50, "mix": "Utiliser de l'alizarine pour un rouge profond et intense" },
+  { "name": "Rouge Vermillon", "r": 227, "g": 66, "b": 52, "mix": "Mélange de vermillon pour un rouge éclatant" },
+  { "name": "Rouge de Mars", "r": 186, "g": 18, "b": 24, "mix": "Pigment de fer pour un rouge terreux" },
+  { "name": "Jaune Citron avec pointe de Terre Brulée", "r": 255, "g": 204, "b": 0, "mix": "Mélange de jaune citron et d'une pointe de terre brûlée" },
+  { "name": "Jaune de Naples Doux", "r": 250, "g": 230, "b": 170, "mix": "Jaune de Naples pour un ton chaud et doux" },
+  { "name": "Ocre Jaune", "r": 204, "g": 119, "b": 34, "mix": "Mélange d'ocres pour obtenir un jaune terreux" },
+  { "name": "Bleu Ultramarine Profond", "r": 18, "g": 10, "b": 143, "mix": "Utiliser des pigments d'ultramarine pour un bleu intense" },
+  { "name": "Bleu Phtalo Intense", "r": 10, "g": 100, "b": 200, "mix": "Bleu phtalo pour un bleu lumineux et saturé" },
+  { "name": "Bleu Cobalt", "r": 0, "g": 71, "b": 171, "mix": "Bleu cobalt pour un bleu froid et vif" },
+  { "name": "Blanc Titan", "r": 255, "g": 255, "b": 255, "mix": "Pigment blanc de titane pour des reflets lumineux" },
+  { "name": "Noir d'Ivoire", "r": 0, "g": 0, "b": 0, "mix": "Mélange d'ombres et de noir d'ivoire pour des nuances profondes" },
+  { "name": "Vert Viridian", "r": 64, "g": 130, "b": 109, "mix": "Vert viridian pour un vert froid et éclatant" },
+  { "name": "Vert Émeraude", "r": 0, "g": 158, "b": 96, "mix": "Vert émeraude pour une teinte riche et vibrante" },
+  { "name": "Terre de Sienne Brûlée", "r": 138, "g": 51, "b": 36, "mix": "Terre de Sienne brûlée pour un brun chaud et terreux" },
+  { "name": "Terre d'Ombre Brûlée", "r": 115, "g": 74, "b": 18, "mix": "Terre d'ombre brûlée pour un brun sombre et naturel" },
+  { "name": "Ocre Rouge", "r": 153, "g": 76, "b": 0, "mix": "Mélange d'ocres pour obtenir un rouge terreux" },
+  { "name": "Vert Olive", "r": 107, "g": 142, "b": 35, "mix": "Vert olive pour une teinte naturelle et atténuée" }
+]
