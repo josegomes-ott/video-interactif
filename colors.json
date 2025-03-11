@@ -1,20 +1,602 @@
 [
-  { "name": "Rouge Cadmium Vif", "r": 227, "g": 0, "b": 34, "mix": "Mélange de pigments cadmium pour obtenir un rouge vif" },
-  { "name": "Rouge Alizarine Profond", "r": 180, "g": 0, "b": 50, "mix": "Utiliser de l'alizarine pour un rouge profond et intense" },
-  { "name": "Rouge Vermillon", "r": 227, "g": 66, "b": 52, "mix": "Mélange de vermillon pour un rouge éclatant" },
-  { "name": "Rouge de Mars", "r": 186, "g": 18, "b": 24, "mix": "Pigment de fer pour un rouge terreux" },
-  { "name": "Jaune Citron avec pointe de Terre Brulée", "r": 255, "g": 204, "b": 0, "mix": "Mélange de jaune citron et d'une pointe de terre brûlée" },
-  { "name": "Jaune de Naples Doux", "r": 250, "g": 230, "b": 170, "mix": "Jaune de Naples pour un ton chaud et doux" },
-  { "name": "Ocre Jaune", "r": 204, "g": 119, "b": 34, "mix": "Mélange d'ocres pour obtenir un jaune terreux" },
-  { "name": "Bleu Ultramarine Profond", "r": 18, "g": 10, "b": 143, "mix": "Utiliser des pigments d'ultramarine pour un bleu intense" },
-  { "name": "Bleu Phtalo Intense", "r": 10, "g": 100, "b": 200, "mix": "Bleu phtalo pour un bleu lumineux et saturé" },
-  { "name": "Bleu Cobalt", "r": 0, "g": 71, "b": 171, "mix": "Bleu cobalt pour un bleu froid et vif" },
-  { "name": "Blanc Titan", "r": 255, "g": 255, "b": 255, "mix": "Pigment blanc de titane pour des reflets lumineux" },
-  { "name": "Noir d'Ivoire", "r": 0, "g": 0, "b": 0, "mix": "Mélange d'ombres et de noir d'ivoire pour des nuances profondes" },
-  { "name": "Vert Viridian", "r": 64, "g": 130, "b": 109, "mix": "Vert viridian pour un vert froid et éclatant" },
-  { "name": "Vert Émeraude", "r": 0, "g": 158, "b": 96, "mix": "Vert émeraude pour une teinte riche et vibrante" },
-  { "name": "Terre de Sienne Brûlée", "r": 138, "g": 51, "b": 36, "mix": "Terre de Sienne brûlée pour un brun chaud et terreux" },
-  { "name": "Terre d'Ombre Brûlée", "r": 115, "g": 74, "b": 18, "mix": "Terre d'ombre brûlée pour un brun sombre et naturel" },
-  { "name": "Ocre Rouge", "r": 153, "g": 76, "b": 0, "mix": "Mélange d'ocres pour obtenir un rouge terreux" },
-  { "name": "Vert Olive", "r": 107, "g": 142, "b": 35, "mix": "Vert olive pour une teinte naturelle et atténuée" }
+  {
+    "colorName": "Rouge Cadmium Vif",
+    "bases": ["rouge"],
+    "proportions": { "rouge": 1 },
+    "comment": "Rouge vif, pigment cadmium."
+  },
+  {
+    "colorName": "Rouge Alizarine",
+    "bases": ["rouge", "bleu"],
+    "proportions": { "rouge": 2, "bleu": 1 },
+    "comment": "Rouge profond légèrement froid."
+  },
+  {
+    "colorName": "Rouge Grenat",
+    "bases": ["rouge", "noir"],
+    "proportions": { "rouge": 3, "noir": 1 },
+    "comment": "Rouge sombre, avec une touche de noir."
+  },
+  {
+    "colorName": "Rose Clair",
+    "bases": ["rouge", "blanc"],
+    "proportions": { "rouge": 1, "blanc": 3 },
+    "comment": "Rose pâle, obtenu en éclaircissant le rouge."
+  },
+  {
+    "colorName": "Rose Magenta",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 2, "bleu": 1, "blanc": 1 },
+    "comment": "Rose vif avec une nuance magenta."
+  },
+  {
+    "colorName": "Rouge Vermillon",
+    "bases": ["rouge", "jaune"],
+    "proportions": { "rouge": 2, "jaune": 1 },
+    "comment": "Rouge légèrement orangé."
+  },
+  {
+    "colorName": "Rouge Coquelicot",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 3, "jaune": 1, "blanc": 1 },
+    "comment": "Rouge vif et lumineux, avec un soupçon de jaune et de blanc."
+  },
+  {
+    "colorName": "Rose Indien",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 3, "blanc": 2, "jaune": 1 },
+    "comment": "Rose chaud, avec une saturation prononcée."
+  },
+  {
+    "colorName": "Rouge Carmin",
+    "bases": ["rouge", "bleu"],
+    "proportions": { "rouge": 3, "bleu": 1 },
+    "comment": "Rouge profond avec une touche violette."
+  },
+  {
+    "colorName": "Rose Fuchsia",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 2, "bleu": 2, "blanc": 1 },
+    "comment": "Rose soutenu, avec une dominante bleutée."
+  },
+  {
+    "colorName": "Orange Vif",
+    "bases": ["rouge", "jaune"],
+    "proportions": { "rouge": 1, "jaune": 1 },
+    "comment": "Orange classique, équilibré."
+  },
+  {
+    "colorName": "Orange Sanguine",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 2, "jaune": 1, "noir": 1 },
+    "comment": "Orange foncé avec une pointe de noir."
+  },
+  {
+    "colorName": "Saumon Clair",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 2, "jaune": 1, "blanc": 2 },
+    "comment": "Teinte saumon adoucie."
+  },
+  {
+    "colorName": "Pêche",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 1, "jaune": 1, "blanc": 3 },
+    "comment": "Pastel tirant sur l'orange rosé."
+  },
+  {
+    "colorName": "Brun Terre",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 2, "jaune": 2, "noir": 1 },
+    "comment": "Brun moyen, avec une touche de noir."
+  },
+  {
+    "colorName": "Brun Chocolat",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 1, "jaune": 1, "noir": 2 },
+    "comment": "Brun foncé, riche en noir."
+  },
+  {
+    "colorName": "Terre de Sienne",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 2, "jaune": 3, "noir": 1 },
+    "comment": "Brun chaud, avec une prédominance de jaune."
+  },
+  {
+    "colorName": "Ocre Rouge",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 3, "jaune": 2, "noir": 1 },
+    "comment": "Rouge terreux, nuance ocre."
+  },
+  {
+    "colorName": "Rouille",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 3, "jaune": 1, "noir": 1 },
+    "comment": "Teinte rappelant la rouille, orange-brunâtre."
+  },
+  {
+    "colorName": "Brun Foncé",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 1, "jaune": 1, "noir": 3 },
+    "comment": "Brun très sombre."
+  },
+  {
+    "colorName": "Jaune Primaire",
+    "bases": ["jaune"],
+    "proportions": { "jaune": 1 },
+    "comment": "Jaune pur, couleur primaire."
+  },
+  {
+    "colorName": "Jaune Citron",
+    "bases": ["jaune", "blanc"],
+    "proportions": { "jaune": 3, "blanc": 1 },
+    "comment": "Jaune vif, éclairci par du blanc."
+  },
+  {
+    "colorName": "Jaune Orangé",
+    "bases": ["jaune", "rouge"],
+    "proportions": { "jaune": 3, "rouge": 1 },
+    "comment": "Jaune avec une pointe d'orange."
+  },
+  {
+    "colorName": "Ocre Jaune",
+    "bases": ["jaune", "rouge", "noir"],
+    "proportions": { "jaune": 3, "rouge": 1, "noir": 1 },
+    "comment": "Jaune terreux, type ocre."
+  },
+  {
+    "colorName": "Jaune Pâle",
+    "bases": ["jaune", "blanc"],
+    "proportions": { "jaune": 2, "blanc": 3 },
+    "comment": "Jaune très doux et clair."
+  },
+  {
+    "colorName": "Jaune Soufre",
+    "bases": ["jaune", "blanc", "noir"],
+    "proportions": { "jaune": 3, "blanc": 2, "noir": 1 },
+    "comment": "Jaune avec une légère tonalité verdâtre."
+  },
+  {
+    "colorName": "Jaune Doré",
+    "bases": ["jaune", "rouge"],
+    "proportions": { "jaune": 4, "rouge": 1 },
+    "comment": "Jaune profond, effet doré."
+  },
+  {
+    "colorName": "Jaune Sahara",
+    "bases": ["jaune", "rouge", "noir"],
+    "proportions": { "jaune": 4, "rouge": 1, "noir": 1 },
+    "comment": "Teinte désertique, tirant sur l'ocre."
+  },
+  {
+    "colorName": "Jaune Solaire",
+    "bases": ["jaune", "blanc", "rouge"],
+    "proportions": { "jaune": 3, "blanc": 1, "rouge": 1 },
+    "comment": "Jaune lumineux, chaleureux."
+  },
+  {
+    "colorName": "Jaune Naple",
+    "bases": ["jaune", "blanc", "rouge"],
+    "proportions": { "jaune": 3, "blanc": 2, "rouge": 1 },
+    "comment": "Nuance napolitaine, douce."
+  },
+  {
+    "colorName": "Vert Primaire",
+    "bases": ["jaune", "bleu"],
+    "proportions": { "jaune": 1, "bleu": 1 },
+    "comment": "Vert de base obtenu par mélange égal."
+  },
+  {
+    "colorName": "Vert Prairie",
+    "bases": ["jaune", "bleu"],
+    "proportions": { "jaune": 2, "bleu": 1 },
+    "comment": "Vert clair et frais."
+  },
+  {
+    "colorName": "Vert Sapin",
+    "bases": ["jaune", "bleu", "noir"],
+    "proportions": { "jaune": 1, "bleu": 2, "noir": 1 },
+    "comment": "Vert sombre rappelant le sapin."
+  },
+  {
+    "colorName": "Vert Émeraude",
+    "bases": ["jaune", "bleu"],
+    "proportions": { "jaune": 2, "bleu": 3 },
+    "comment": "Vert brillant et froid."
+  },
+  {
+    "colorName": "Vert Olive",
+    "bases": ["jaune", "bleu", "rouge", "noir"],
+    "proportions": { "jaune": 2, "bleu": 1, "rouge": 1, "noir": 1 },
+    "comment": "Vert terne, typique olive."
+  },
+  {
+    "colorName": "Vert Menthe",
+    "bases": ["jaune", "bleu", "blanc"],
+    "proportions": { "jaune": 1, "bleu": 1, "blanc": 2 },
+    "comment": "Vert pastel, frais et clair."
+  },
+  {
+    "colorName": "Vert Anis",
+    "bases": ["jaune", "bleu", "blanc"],
+    "proportions": { "jaune": 3, "bleu": 1, "blanc": 1 },
+    "comment": "Vert vif, avec une touche de pastel."
+  },
+  {
+    "colorName": "Vert Forêt",
+    "bases": ["jaune", "bleu", "noir"],
+    "proportions": { "jaune": 1, "bleu": 2, "noir": 2 },
+    "comment": "Vert profond et sombre."
+  },
+  {
+    "colorName": "Vert Tilleul",
+    "bases": ["jaune", "bleu", "blanc"],
+    "proportions": { "jaune": 2, "bleu": 1, "blanc": 3 },
+    "comment": "Vert léger, tirant sur le pastel."
+  },
+  {
+    "colorName": "Vert Militaire",
+    "bases": ["jaune", "bleu", "noir", "rouge"],
+    "proportions": { "jaune": 2, "bleu": 1, "noir": 1, "rouge": 1 },
+    "comment": "Vert kaki foncé."
+  },
+  {
+    "colorName": "Bleu Primaire",
+    "bases": ["bleu"],
+    "proportions": { "bleu": 1 },
+    "comment": "Bleu pur, couleur de base."
+  },
+  {
+    "colorName": "Bleu Ciel",
+    "bases": ["bleu", "blanc"],
+    "proportions": { "bleu": 1, "blanc": 1 },
+    "comment": "Bleu clair et aérien."
+  },
+  {
+    "colorName": "Bleu Pastel",
+    "bases": ["bleu", "blanc"],
+    "proportions": { "bleu": 1, "blanc": 3 },
+    "comment": "Bleu très clair, pastel."
+  },
+  {
+    "colorName": "Bleu Roi",
+    "bases": ["bleu", "rouge"],
+    "proportions": { "bleu": 3, "rouge": 1 },
+    "comment": "Bleu intense, avec une touche de rouge."
+  },
+  {
+    "colorName": "Bleu Turquoise",
+    "bases": ["bleu", "jaune", "blanc"],
+    "proportions": { "bleu": 2, "jaune": 1, "blanc": 1 },
+    "comment": "Bleu-vert clair, nuance tropicale."
+  },
+  {
+    "colorName": "Bleu Marine",
+    "bases": ["bleu", "noir"],
+    "proportions": { "bleu": 2, "noir": 1 },
+    "comment": "Bleu sombre, proche du noir."
+  },
+  {
+    "colorName": "Bleu Indigo",
+    "bases": ["bleu", "rouge", "noir"],
+    "proportions": { "bleu": 3, "rouge": 1, "noir": 1 },
+    "comment": "Bleu profond avec une nuance violette."
+  },
+  {
+    "colorName": "Bleu Ardoise",
+    "bases": ["bleu", "noir", "blanc"],
+    "proportions": { "bleu": 2, "noir": 1, "blanc": 1 },
+    "comment": "Bleu grisé, sobre."
+  },
+  {
+    "colorName": "Bleu Canard",
+    "bases": ["bleu", "jaune", "noir"],
+    "proportions": { "bleu": 3, "jaune": 1, "noir": 1 },
+    "comment": "Nuance tirant vers un vert sombre."
+  },
+  {
+    "colorName": "Bleu Nuit",
+    "bases": ["bleu", "noir"],
+    "proportions": { "bleu": 3, "noir": 2 },
+    "comment": "Bleu très sombre, presque noir."
+  },
+  {
+    "colorName": "Violet Primaire",
+    "bases": ["rouge", "bleu"],
+    "proportions": { "rouge": 1, "bleu": 1 },
+    "comment": "Violet simple et équilibré."
+  },
+  {
+    "colorName": "Mauve Clair",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 1, "bleu": 1, "blanc": 2 },
+    "comment": "Violet pastel léger."
+  },
+  {
+    "colorName": "Violet Pourpre",
+    "bases": ["rouge", "bleu"],
+    "proportions": { "rouge": 3, "bleu": 2 },
+    "comment": "Violet chaud, avec une dominance de rouge."
+  },
+  {
+    "colorName": "Violet Foncé",
+    "bases": ["rouge", "bleu", "noir"],
+    "proportions": { "rouge": 2, "bleu": 2, "noir": 1 },
+    "comment": "Violet intense et sombre."
+  },
+  {
+    "colorName": "Parme",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 1, "bleu": 1, "blanc": 3 },
+    "comment": "Violet clair, nuance parme."
+  },
+  {
+    "colorName": "Lavande",
+    "bases": ["bleu", "rouge", "blanc"],
+    "proportions": { "bleu": 2, "rouge": 1, "blanc": 3 },
+    "comment": "Mauve doux et pastel."
+  },
+  {
+    "colorName": "Aubergine",
+    "bases": ["rouge", "bleu", "noir"],
+    "proportions": { "rouge": 2, "bleu": 3, "noir": 1 },
+    "comment": "Violet très foncé, style aubergine."
+  },
+  {
+    "colorName": "Violet Royal",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 2, "bleu": 2, "blanc": 1 },
+    "comment": "Violet vif et lumineux."
+  },
+  {
+    "colorName": "Violet Gris",
+    "bases": ["rouge", "bleu", "blanc", "noir"],
+    "proportions": { "rouge": 1, "bleu": 1, "blanc": 2, "noir": 1 },
+    "comment": "Violet atténué, avec une touche de gris."
+  },
+  {
+    "colorName": "Améthyste",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 1, "bleu": 2, "blanc": 2 },
+    "comment": "Violet froid, évoquant la pierre précieuse."
+  },
+  {
+    "colorName": "Noir Pur",
+    "bases": ["noir"],
+    "proportions": { "noir": 1 },
+    "comment": "Noir absolu, sans mélange."
+  },
+  {
+    "colorName": "Gris Clair",
+    "bases": ["noir", "blanc"],
+    "proportions": { "noir": 1, "blanc": 4 },
+    "comment": "Gris très léger et clair."
+  },
+  {
+    "colorName": "Gris Moyen",
+    "bases": ["noir", "blanc"],
+    "proportions": { "noir": 1, "blanc": 2 },
+    "comment": "Gris équilibré, neutre."
+  },
+  {
+    "colorName": "Gris Foncé",
+    "bases": ["noir", "blanc"],
+    "proportions": { "noir": 2, "blanc": 1 },
+    "comment": "Gris sombre, avec plus de noir."
+  },
+  {
+    "colorName": "Gris Bleu",
+    "bases": ["noir", "blanc", "bleu"],
+    "proportions": { "noir": 1, "blanc": 2, "bleu": 1 },
+    "comment": "Gris avec une touche bleutée."
+  },
+  {
+    "colorName": "Gris Chaud",
+    "bases": ["noir", "blanc", "rouge"],
+    "proportions": { "noir": 1, "blanc": 3, "rouge": 1 },
+    "comment": "Gris avec une légère teinte rougeâtre."
+  },
+  {
+    "colorName": "Anthracite",
+    "bases": ["noir", "bleu"],
+    "proportions": { "noir": 2, "bleu": 1 },
+    "comment": "Noir avec une pointe de bleu, très sombre."
+  },
+  {
+    "colorName": "Charbon",
+    "bases": ["noir", "rouge"],
+    "proportions": { "noir": 2, "rouge": 1 },
+    "comment": "Noir chaud, légèrement teinté de rouge."
+  },
+  {
+    "colorName": "Gris Vert",
+    "bases": ["noir", "blanc", "jaune", "bleu"],
+    "proportions": { "noir": 1, "blanc": 2, "jaune": 1, "bleu": 1 },
+    "comment": "Gris avec un soupçon de vert."
+  },
+  {
+    "colorName": "Ébène",
+    "bases": ["noir", "bleu", "rouge"],
+    "proportions": { "noir": 3, "bleu": 1, "rouge": 1 },
+    "comment": "Noir très profond, presque velouté."
+  },
+  {
+    "colorName": "Chair Rosée",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 1, "jaune": 1, "blanc": 3 },
+    "comment": "Teinte de peau claire, avec une pointe de rose."
+  },
+  {
+    "colorName": "Chair Foncée",
+    "bases": ["rouge", "jaune", "noir", "blanc"],
+    "proportions": { "rouge": 2, "jaune": 2, "noir": 1, "blanc": 2 },
+    "comment": "Teint de peau sombre, bien équilibré."
+  },
+  {
+    "colorName": "Pêche Douce",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 1, "jaune": 2, "blanc": 3 },
+    "comment": "Pastel orange rosé, délicat."
+  },
+  {
+    "colorName": "Chair Olive",
+    "bases": ["rouge", "jaune", "bleu", "blanc"],
+    "proportions": { "rouge": 1, "jaune": 2, "bleu": 1, "blanc": 3 },
+    "comment": "Teint avec une nuance olive subtile."
+  },
+  {
+    "colorName": "Chair Bronzée",
+    "bases": ["rouge", "jaune", "noir", "blanc"],
+    "proportions": { "rouge": 2, "jaune": 2, "noir": 1, "blanc": 1 },
+    "comment": "Teint bronzé, riche et chaud."
+  },
+  {
+    "colorName": "Pêche Rosée",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 2, "jaune": 1, "blanc": 3 },
+    "comment": "Orange rosé doux et pastel."
+  },
+  {
+    "colorName": "Chair Orangée",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 1, "jaune": 2, "blanc": 2 },
+    "comment": "Teinte chaude, légèrement orangée."
+  },
+  {
+    "colorName": "Chair Très Claire",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 1, "jaune": 1, "blanc": 5 },
+    "comment": "Peau très pâle, presque porcelaine."
+  },
+  {
+    "colorName": "Pêche Foncée",
+    "bases": ["rouge", "jaune", "blanc", "noir"],
+    "proportions": { "rouge": 2, "jaune": 2, "blanc": 2, "noir": 1 },
+    "comment": "Saumon soutenu, avec une intensité plus sombre."
+  },
+  {
+    "colorName": "Chair Cendrée",
+    "bases": ["rouge", "jaune", "blanc", "noir"],
+    "proportions": { "rouge": 1, "jaune": 1, "blanc": 3, "noir": 1 },
+    "comment": "Teinte de peau terne ou cendrée."
+  },
+  {
+    "colorName": "Rose Bonbon",
+    "bases": ["rouge", "blanc"],
+    "proportions": { "rouge": 1, "blanc": 2 },
+    "comment": "Rose vif, style bonbon."
+  },
+  {
+    "colorName": "Rose Pastel",
+    "bases": ["rouge", "blanc"],
+    "proportions": { "rouge": 1, "blanc": 4 },
+    "comment": "Rose très clair et doux."
+  },
+  {
+    "colorName": "Corail Clair",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 2, "jaune": 1, "blanc": 2 },
+    "comment": "Rose-orangé clair, délicat."
+  },
+  {
+    "colorName": "Lilas Pastel",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 1, "bleu": 2, "blanc": 3 },
+    "comment": "Violet pastel, doux et léger."
+  },
+  {
+    "colorName": "Menthe Pastel",
+    "bases": ["jaune", "bleu", "blanc"],
+    "proportions": { "jaune": 1, "bleu": 1, "blanc": 4 },
+    "comment": "Vert très clair, style bébé."
+  },
+  {
+    "colorName": "Pistache",
+    "bases": ["jaune", "bleu", "blanc"],
+    "proportions": { "jaune": 2, "bleu": 1, "blanc": 3 },
+    "comment": "Vert pastel tirant sur le jaune."
+  },
+  {
+    "colorName": "Pêche Pastel",
+    "bases": ["rouge", "jaune", "blanc"],
+    "proportions": { "rouge": 1, "jaune": 1, "blanc": 4 },
+    "comment": "Orange rosé très doux et pastel."
+  },
+  {
+    "colorName": "Bleu Layette",
+    "bases": ["bleu", "blanc"],
+    "proportions": { "bleu": 1, "blanc": 5 },
+    "comment": "Bleu bébé, très clair."
+  },
+  {
+    "colorName": "Lavande Pastel",
+    "bases": ["rouge", "bleu", "blanc"],
+    "proportions": { "rouge": 1, "bleu": 1, "blanc": 4 },
+    "comment": "Mauve très doux et pastel."
+  },
+  {
+    "colorName": "Jaune Pastel",
+    "bases": ["jaune", "blanc"],
+    "proportions": { "jaune": 1, "blanc": 5 },
+    "comment": "Jaune clair et délicat, style pastel."
+  },
+  {
+    "colorName": "Or Antique",
+    "bases": ["jaune", "rouge", "noir"],
+    "proportions": { "jaune": 3, "rouge": 1, "noir": 1 },
+    "comment": "Teinte dorée vieillie, style antique."
+  },
+  {
+    "colorName": "Argent",
+    "bases": ["noir", "blanc", "bleu"],
+    "proportions": { "noir": 1, "blanc": 3, "bleu": 1 },
+    "comment": "Gris froid, imitant l'argent."
+  },
+  {
+    "colorName": "Bronze",
+    "bases": ["jaune", "rouge", "noir"],
+    "proportions": { "jaune": 2, "rouge": 1, "noir": 2 },
+    "comment": "Marron doré, aspect métallique."
+  },
+  {
+    "colorName": "Cuivre",
+    "bases": ["rouge", "jaune", "noir"],
+    "proportions": { "rouge": 3, "jaune": 1, "noir": 1 },
+    "comment": "Rouge orangé foncé, aspect cuivré."
+  },
+  {
+    "colorName": "Turquoise Foncé",
+    "bases": ["bleu", "jaune", "noir"],
+    "proportions": { "bleu": 3, "jaune": 1, "noir": 1 },
+    "comment": "Bleu-vert sombre, exotique."
+  },
+  {
+    "colorName": "Magenta Profond",
+    "bases": ["rouge", "bleu"],
+    "proportions": { "rouge": 2, "bleu": 2 },
+    "comment": "Rose violacé très saturé."
+  },
+  {
+    "colorName": "Vert Néon",
+    "bases": ["jaune", "bleu", "blanc"],
+    "proportions": { "jaune": 3, "bleu": 1, "blanc": 1 },
+    "comment": "Vert vif, presque fluorescent."
+  },
+  {
+    "colorName": "Rose Fluo",
+    "bases": ["rouge", "blanc", "jaune"],
+    "proportions": { "rouge": 3, "blanc": 1, "jaune": 1 },
+    "comment": "Rose très saturé, fluo."
+  },
+  {
+    "colorName": "Bleu Électrique",
+    "bases": ["bleu", "blanc"],
+    "proportions": { "bleu": 3, "blanc": 1 },
+    "comment": "Bleu vif et saturé, style électrique."
+  },
+  {
+    "colorName": "Vert Tropical",
+    "bases": ["bleu", "jaune", "blanc"],
+    "proportions": { "bleu": 2, "jaune": 2, "blanc": 1 },
+    "comment": "Vert exotique, avec équilibre entre jaune et bleu."
+  }
 ]
