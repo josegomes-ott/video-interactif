@@ -90,22 +90,31 @@
     trackingCanvas.width = 320;
     trackingCanvas.height = 240;
     
-    // Liste de couleurs de base pour la peinture à l'huile
+    // Base de données de couleurs enrichie pour la peinture à l'huile
     const oilPaintColors = [
-      {name: "Cadmium Red", r: 227, g: 0, b: 34},
-      {name: "Cadmium Yellow", r: 255, g: 153, b: 0},
-      {name: "Ultramarine Blue", r: 18, g: 10, b: 143},
-      {name: "Titanium White", r: 255, g: 255, b: 255},
-      {name: "Ivory Black", r: 0, g: 0, b: 0},
-      {name: "Viridian", r: 64, g: 130, b: 109},
-      {name: "Burnt Umber", r: 138, g: 51, b: 36},
-      {name: "Raw Sienna", r: 203, g: 144, b: 100},
+      {name: "Rouge Cadmium Vif", r: 227, g: 0, b: 34},
+      {name: "Rouge Alizarine Profond", r: 180, g: 0, b: 50},
+      {name: "Jaune Citron avec pointe de Terre Brulée", r: 255, g: 204, b: 0},
+      {name: "Jaune de Naples Doux", r: 250, g: 230, b: 170},
+      {name: "Bleu Ultramarine Profond", r: 18, g: 10, b: 143},
+      {name: "Bleu Phtalo Intense", r: 10, g: 100, b: 200},
+      {name: "Blanc Titan", r: 255, g: 255, b: 255},
+      {name: "Noir d'Ivoire", r: 0, g: 0, b: 0},
+      {name: "Vert Viridian", r: 64, g: 130, b: 109},
+      {name: "Vert Émeraude", r: 0, g: 158, b: 96},
+      {name: "Terre de Sienne Brûlée", r: 138, g: 51, b: 36},
+      {name: "Terre d'Ombre Brûlée", r: 115, g: 74, b: 18},
     ];
     
+    // Changement de vidéo aléatoire avec 3 doigts
     function changeVideo() {
-      currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+      let newIndex = Math.floor(Math.random() * videos.length);
+      if (videos.length > 1 && newIndex === currentVideoIndex) {
+          newIndex = (newIndex + 1) % videos.length;
+      }
+      currentVideoIndex = newIndex;
       videoElement.src = videos[currentVideoIndex];
-      videoElement.loop = true; // Réactive le loop pour la nouvelle vidéo
+      videoElement.loop = true;
       clearCanvas();
       if (showColorName) {
         colorNameDiv.innerHTML = "";
@@ -117,7 +126,7 @@
       paintPositions = [];
     }
     
-    // Récupère la couleur du pixel en tenant compte de la position réelle de la vidéo
+    // Récupère la couleur du pixel dans la zone de la vidéo
     function getPixelColor(x, y) {
       const rect = videoElement.getBoundingClientRect();
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
@@ -134,7 +143,7 @@
       return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
     }
     
-    // Compare la couleur obtenue à une liste de couleurs de base pour trouver le mélange le plus proche
+    // Recherche dans la base de données la couleur la plus proche et retourne son nom précis
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
@@ -154,13 +163,13 @@
       return closest ? closest.name : rgb;
     }
     
-    // Combine la valeur RGB et le mélange suggéré
+    // Combine la valeur RGB et le nom détaillé du mélange
     function getColorName(rgb) {
       let oilMix = getOilPaintMix(rgb);
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour le bloc d'affichage des couleurs avec pastille et texte
+    // Met à jour le bloc d'affichage avec la pastille et le texte pour chaque couleur sélectionnée
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -196,26 +205,16 @@
     
     function detectTouches(event) {
       event.preventDefault();
-      // On ne traite que si l'événement provient bien du canvas
+      // On traite uniquement les événements provenant du canvas
       if (event.target !== canvas) return;
-      
       if (gestureHandled) return;
       let touchCount = event.touches.length;
-      if (touchCount === 4) {
-        // 4 doigts : Figer la vidéo exactement au frame actuel
-        if (!videoElement.paused) {
-          let currentFrameTime = videoElement.currentTime;
-          videoElement.pause();
-          videoElement.currentTime = currentFrameTime;
-          videoElement.loop = false;
-        }
-        gestureHandled = true;
-      } else if (touchCount === 3) {
-        // 3 doigts : Changer de vidéo
+      if (touchCount === 3) {
+        // 3 doigts : Changer de vidéo aléatoirement
         changeVideo();
         gestureHandled = true;
       } else if (touchCount === 2) {
-        // 2 doigts : Effacer les pastilles et réinitialiser l'affichage
+        // 2 doigts : Effacer les pastilles
         clearCanvas();
         if (showColorName) {
           colorNameDiv.innerHTML = "";
@@ -239,7 +238,7 @@
       drawPaint();
     });
     
-    // Gestion du bouton pour le tactile
+    // Gestion du bouton pour le tactile : éviter la propagation pour ne pas déclencher de geste sur le canvas
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
       e.preventDefault();
