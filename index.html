@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vidéo Interactive & Analyse des Couleurs</title>
+  <!-- Inclusion de chroma.js depuis CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
   <style>
     body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
     video { position: absolute; max-width: 90vw; max-height: 90vh; object-fit: contain; filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg); transition: filter 0.2s ease-in-out; }
@@ -36,7 +38,7 @@
     let showColorName = false;
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
     let paintPositions = [];
-    let gestureLock = false; // Pour éviter les déclenchements multiples
+    let gestureLock = false;
     let oilPaintColors = []; // Base de données chargée depuis le fichier JSON
     
     canvas.width = window.innerWidth;
@@ -53,7 +55,7 @@
       "noir": { r: 0, g: 0, b: 0 }
     };
     
-    // Fonction pour calculer la couleur résultante à partir des proportions
+    // Calculer la couleur résultante en RGB à partir des proportions
     function computeColorFromMix(proportions) {
       let total = 0, sumR = 0, sumG = 0, sumB = 0;
       for (let base in proportions) {
@@ -73,27 +75,28 @@
       };
     }
     
-    // Fonction pour formater les proportions en chaîne de caractères
+    // Formater les proportions en une chaîne de caractères
     function formatProportions(proportions) {
       return Object.entries(proportions)
                    .map(([base, qty]) => `${base}: ${qty}`)
                    .join(", ");
     }
     
-    // Chargement du fichier JSON contenant la base de données des couleurs
+    // Chargement du fichier JSON et enrichissement des objets avec la couleur Lab
     fetch('colors.json')
       .then(response => response.json())
       .then(data => {
-        // Pour chaque entrée, calculer les valeurs RGB à partir des proportions
+        // Pour chaque entrée, calculez la couleur RGB puis la conversion en Lab avec chroma.js
         oilPaintColors = data.map(entry => {
           let computed = computeColorFromMix(entry.proportions);
-          return { ...entry, r: computed.r, g: computed.g, b: computed.b };
+          let lab = chroma(`rgb(${computed.r}, ${computed.g}, ${computed.b})`).lab();
+          return { ...entry, r: computed.r, g: computed.g, b: computed.b, lab: lab };
         });
         console.log("Couleurs chargées :", oilPaintColors);
       })
       .catch(error => console.error("Erreur lors du chargement du fichier JSON :", error));
     
-    // Changement de vidéo aléatoire avec 3 doigts
+    // Changement de vidéo aléatoire (3 doigts)
     function changeVideo() {
       let newIndex = Math.floor(Math.random() * videos.length);
       if (videos.length > 1 && newIndex === currentVideoIndex) {
@@ -112,7 +115,7 @@
       paintPositions = [];
     }
     
-    // Récupère la couleur d'un pixel dans la zone affichée de la vidéo
+    // Récupère la couleur d'un pixel de la vidéo
     function getPixelColor(x, y) {
       const rect = videoElement.getBoundingClientRect();
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
@@ -129,30 +132,29 @@
       return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
     }
     
-    // Recherche dans la base de données la nuance la plus proche et ajoute les proportions formatées
+    // Comparaison en espace Lab (Delta E)
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
       if (oilPaintColors.length === 0) return rgb + " - Base non chargée";
-      let r = parseInt(parts[0]), g = parseInt(parts[1]), b = parseInt(parts[2]);
+      let capturedLab = chroma(rgb).lab();
       let closest = null;
-      let minDist = Infinity;
+      let minDeltaE = Infinity;
       oilPaintColors.forEach(color => {
-        let dr = r - color.r;
-        let dg = g - color.g;
-        let db = b - color.b;
-        let dist = Math.sqrt(dr * dr + dg * dg + db * db);
-        if (dist < minDist) {
-          minDist = dist;
+        // Assurez-vous que la propriété lab existe
+        if (!color.lab) return;
+        let deltaE = chroma.deltaE(capturedLab, color.lab);
+        if (deltaE < minDeltaE) {
+          minDeltaE = deltaE;
           closest = color;
         }
       });
-      // Ajustez le seuil ici si nécessaire (0 à environ 441)
-      if (minDist > 50) {  
-        return rgb + " - Couleur non référencée";
+      // Vous pouvez ajuster ce seuil selon vos préférences (par exemple, 10 est déjà une tolérance fine)
+      if (minDeltaE > 10) {  
+        return rgb + " - Couleur non référencée (ΔE=" + minDeltaE.toFixed(1) + ")";
       }
       let propString = formatProportions(closest.proportions);
-      return closest ? `${closest.colorName} (${closest.comment}) - Proportions: ${propString}` : rgb;
+      return closest ? `${closest.colorName} (${closest.comment}) - Proportions: ${propString} (ΔE=${minDeltaE.toFixed(1)})` : rgb;
     }
     
     function getColorName(rgb) {
@@ -183,7 +185,6 @@
       if (showColorName) { updateColorNames(); }
     }
     
-    // Gestion des gestes tactiles sur le canvas
     canvas.addEventListener('touchstart', function(event) {
       event.preventDefault();
       if (gestureLock) return;
@@ -206,7 +207,6 @@
       }
     }, { passive: false });
     
-    // Gestion des clics souris sur le canvas
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -215,7 +215,6 @@
       drawPaint();
     });
     
-    // Empêcher que le toucher sur le bouton ne déclenche une action sur le canvas
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
       e.preventDefault();
