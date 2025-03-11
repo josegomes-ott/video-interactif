@@ -72,6 +72,7 @@
   </div>
   
   <script>
+    // Liste de vidéos à afficher
     const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
     const videoElement = document.getElementById('video');
     const canvas = document.getElementById('paintCanvas');
@@ -85,8 +86,11 @@
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
     let paintPositions = [];
     let gestureLock = false; // Pour éviter les déclenchements multiples
-    let oilPaintColors = []; // La base de données sera chargée depuis le fichier JSON
     
+    // La base de données des couleurs sera chargée depuis le fichier JSON
+    let oilPaintColors = [];
+    
+    // Dimensionnement des canvas
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     trackingCanvas.width = 320;
@@ -101,7 +105,7 @@
       })
       .catch(error => console.error("Erreur lors du chargement du fichier JSON :", error));
     
-    // Changement de vidéo aléatoire avec 3 doigts
+    // Fonction pour changer de vidéo de façon aléatoire (geste à 3 doigts)
     function changeVideo() {
       let newIndex = Math.floor(Math.random() * videos.length);
       if (videos.length > 1 && newIndex === currentVideoIndex) {
@@ -117,12 +121,13 @@
       console.log("Vidéo changée, nouvel index :", currentVideoIndex);
     }
     
+    // Efface le canvas et réinitialise les positions de peinture
     function clearCanvas() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       paintPositions = [];
     }
     
-    // Récupère la couleur du pixel dans la zone affichée de la vidéo
+    // Récupère la couleur d'un pixel en fonction de la position dans la vidéo affichée
     function getPixelColor(x, y) {
       const rect = videoElement.getBoundingClientRect();
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
@@ -156,7 +161,7 @@
           closest = color;
         }
       });
-      return closest ? closest.name : rgb;
+      return closest ? closest.name + " (" + closest.mix + ")" : rgb;
     }
     
     // Combine la valeur RGB et le nom détaillé du mélange
@@ -165,7 +170,7 @@
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour le bloc d'affichage (en bas à droite) avec la pastille et le texte pour chaque couleur sélectionnée
+    // Met à jour le bloc d'affichage avec une pastille et le texte associé pour chaque couleur sélectionnée
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -178,6 +183,7 @@
       colorNameDiv.innerHTML = html;
     }
     
+    // Dessine sur le canvas toutes les pastilles et met à jour l'affichage des noms de couleurs si nécessaire
     function drawPaint() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let p of paintPositions) {
@@ -191,21 +197,21 @@
       }
     }
     
-    // Gestion des gestes sur le canvas
+    // Gestion des gestes tactiles sur le canvas
     canvas.addEventListener('touchstart', function(event) {
       event.preventDefault();
       if (gestureLock) return;
       let touchCount = event.touches.length;
-      if (touchCount >= 3) {
+      if (touchCount >= 3) {  // 3 doigts ou plus : changement de vidéo
         changeVideo();
         gestureLock = true;
         setTimeout(() => { gestureLock = false; }, 500);
-      } else if (touchCount === 2) {
+      } else if (touchCount === 2) { // 2 doigts : effacer les pastilles
         clearCanvas();
         if (showColorName) { colorNameDiv.innerHTML = ""; }
         gestureLock = true;
         setTimeout(() => { gestureLock = false; }, 500);
-      } else if (touchCount === 1) {
+      } else if (touchCount === 1) { // 1 doigt : ajouter une pastille
         let x = event.touches[0].clientX;
         let y = event.touches[0].clientY;
         let color = getPixelColor(x, y);
@@ -214,7 +220,7 @@
       }
     }, { passive: false });
     
-    // Gestion des clics souris sur le canvas
+    // Gestion des clics souris sur le canvas (similaire au toucher 1 doigt)
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -223,7 +229,7 @@
       drawPaint();
     });
     
-    // Gestion du bouton pour le tactile : éviter que le toucher sur le bouton ne déclenche une action sur le canvas
+    // Empêcher que le toucher sur le bouton ne déclenche une action sur le canvas
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
       e.preventDefault();
@@ -234,7 +240,7 @@
       toggleColorNameButton.click();
     });
     
-    // Gestion du clic sur le bouton
+    // Gestion du clic sur le bouton d'affichage des noms de couleurs
     toggleColorNameButton.addEventListener("click", () => {
       showColorName = !showColorName;
       colorNameDiv.style.display = showColorName ? "block" : "none";
@@ -243,6 +249,7 @@
       }
     });
     
+    // Initialisation de la vidéo
     videoElement.src = videos[currentVideoIndex];
   </script>
 </body>
