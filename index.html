@@ -160,7 +160,7 @@
         }
       });
       // Ajustez ce seuil selon vos besoins (valeur entre 0 et ~441)
-      if (minDist > 200) {  
+      if (minDist > 3000) {  
         return rgb + " - Couleur non référencée";
       }
       return closest ? closest.name + " (" + closest.mix + ")" : rgb;
