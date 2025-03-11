@@ -144,8 +144,8 @@
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
-      // Si la base de données n'est pas chargée, retourner la valeur originale
-      if (oilPaintColors.length === 0) return rgb;
+      // Si la base de données n'est pas chargée, on retourne un message
+      if (oilPaintColors.length === 0) return rgb + " - Base non chargée";
       let r = parseInt(parts[0]), g = parseInt(parts[1]), b = parseInt(parts[2]);
       let closest = null;
       let minDist = Infinity;
@@ -159,8 +159,8 @@
           closest = color;
         }
       });
-      // Optionnel : si la distance est trop grande, on peut considérer que la nuance n'est pas référencée.
-      if (minDist > 200) {
+      // Ajustez ce seuil selon vos besoins (valeur entre 0 et ~441)
+      if (minDist > 200) {  
         return rgb + " - Couleur non référencée";
       }
       return closest ? closest.name + " (" + closest.mix + ")" : rgb;
