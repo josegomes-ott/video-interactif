@@ -30,7 +30,7 @@
       height: 100vh;
       touch-action: none;
     }
-    /* Positionné en bas à droite */
+    /* Bloc affichage en bas à droite */
     #colorName {
       position: absolute;
       bottom: 20px;
@@ -89,7 +89,7 @@
     trackingCanvas.width = 320;
     trackingCanvas.height = 240;
     
-    // Liste de couleurs de base pour la peinture à l'huile avec leurs valeurs approximatives
+    // Liste de couleurs de base pour la peinture à l'huile
     const oilPaintColors = [
       {name: "Cadmium Red", r: 227, g: 0, b: 34},
       {name: "Cadmium Yellow", r: 255, g: 153, b: 0},
@@ -104,7 +104,7 @@
     function changeVideo() {
       currentVideoIndex = (currentVideoIndex + 1) % videos.length;
       videoElement.src = videos[currentVideoIndex];
-      videoElement.loop = true; // réactive le loop pour la nouvelle vidéo
+      videoElement.loop = true; // on réactive le loop pour la nouvelle vidéo
       clearCanvas();
       if (showColorName) {
         colorNameDiv.innerHTML = "";
@@ -116,10 +116,10 @@
       paintPositions = [];
     }
     
-    // Calcule la couleur en tenant compte de la position réelle de la vidéo
+    // Renvoie la couleur du pixel en tenant compte de la position réelle de la vidéo
     function getPixelColor(x, y) {
       const rect = videoElement.getBoundingClientRect();
-      // Si le point n'est pas dans la zone de la vidéo, retourne du noir
+      // Si le point n'est pas dans la zone de la vidéo, on retourne du noir
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
         return "rgb(0, 0, 0)";
       }
@@ -135,7 +135,7 @@
       return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
     }
     
-    // Renvoie le nom du mélange de peinture à l'huile le plus proche
+    // Renvoie le nom de la couleur de base la plus proche pour le mélange de peinture à l'huile
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
@@ -161,7 +161,7 @@
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour l'affichage dans le bloc colorName en affichant une pastille de couleur à côté du texte
+    // Met à jour l'affichage du bloc colorName avec une pastille et le texte (RGB + mélange)
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -191,14 +191,19 @@
       event.preventDefault();
       let touchCount = event.touches.length;
       if (touchCount === 4) {
-        // 4 doigts : Mettre la vidéo en pause sans la remettre au début
-        videoElement.pause();
-        videoElement.loop = false; // désactive le loop pour éviter le retour au début
+        // 4 doigts : Geler la vidéo exactement au timing actuel
+        if (!videoElement.paused) {
+          let currentFrameTime = videoElement.currentTime;
+          videoElement.pause();
+          // Repositionnement pour forcer l'affichage de l'image exacte
+          videoElement.currentTime = currentFrameTime;
+          videoElement.loop = false;
+        }
       } else if (touchCount === 3) {
         // 3 doigts : Changer de vidéo
         changeVideo();
       } else if (touchCount === 2) {
-        // 2 doigts : Effacer les pastilles et réinitialiser l'affichage des couleurs
+        // 2 doigts : Effacer les pastilles et réinitialiser l'affichage
         clearCanvas();
         if (showColorName) {
           colorNameDiv.innerHTML = "";
@@ -212,7 +217,7 @@
       }
     }
     
-    // Gestion du clic souris (équivalent à une touche unique)
+    // Gestion du clic souris (équivalent à un toucher à 1 doigt)
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
