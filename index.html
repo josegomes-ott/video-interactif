@@ -1,137 +1,184 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidéo Interactive & Analyse des Couleurs</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        video {
-            position: absolute;
-            max-width: 90vw;
-            max-height: 90vh;
-            object-fit: contain;
-            filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
-            transition: filter 0.2s ease-in-out;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            touch-action: none;
-        }
-        #colorName {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px;
-            font-size: 18px;
-            border-radius: 5px;
-            display: none;
-            z-index: 1000;
-        }
-        .controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 1000;
-        }
-        .controls button {
-            padding: 10px;
-            background: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vidéo Interactive & Analyse des Couleurs</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    video {
+      position: absolute;
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
+      transition: filter 0.2s ease-in-out;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+    #colorName {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 5px;
+      display: none;
+      z-index: 1000;
+    }
+    .controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+    .controls button {
+      padding: 10px;
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-    <video id="video" autoplay loop muted></video>
-    <canvas id="paintCanvas"></canvas>
-    <canvas id="trackingCanvas" style="display: none;"></canvas>
-    <div id="colorName"></div>
-    <div class="controls">
-        <button id="toggleColorName">Nom des couleurs</button>
-    </div>
+  <video id="video" autoplay loop muted></video>
+  <canvas id="paintCanvas"></canvas>
+  <canvas id="trackingCanvas" style="display: none;"></canvas>
+  <div id="colorName"></div>
+  <div class="controls">
+    <button id="toggleColorName">Nom des couleurs</button>
+  </div>
+  
+  <script>
+    const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
+    const videoElement = document.getElementById('video');
+    const canvas = document.getElementById('paintCanvas');
+    const trackingCanvas = document.getElementById('trackingCanvas');
+    const ctx = canvas.getContext('2d');
+    const trackingCtx = trackingCanvas.getContext('2d');
+    const colorNameDiv = document.getElementById('colorName');
+    const toggleColorNameButton = document.getElementById('toggleColorName');
+    let showColorName = false;
+    let currentVideoIndex = Math.floor(Math.random() * videos.length);
+    let paintPositions = [];
     
-    <script>
-        const videos = ['video1.mp4', 'video2.mp4', 'video3.mp4'];
-        const videoElement = document.getElementById('video');
-        const canvas = document.getElementById('paintCanvas');
-        const trackingCanvas = document.getElementById('trackingCanvas');
-        const ctx = canvas.getContext('2d');
-        const trackingCtx = trackingCanvas.getContext('2d');
-        const colorNameDiv = document.getElementById('colorName');
-        const toggleColorNameButton = document.getElementById('toggleColorName');
-        let showColorName = false;
-        let currentVideoIndex = Math.floor(Math.random() * videos.length);
-        let paintPositions = [];
-        
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        trackingCanvas.width = 320;
-        trackingCanvas.height = 240;
-        
-        function changeVideo() {
-            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-            videoElement.src = videos[currentVideoIndex];
-            clearCanvas();
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    trackingCanvas.width = 320;
+    trackingCanvas.height = 240;
+    
+    function changeVideo() {
+      currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+      videoElement.src = videos[currentVideoIndex];
+      clearCanvas();
+      if (showColorName) {
+        colorNameDiv.innerHTML = "";
+      }
+    }
+    
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      paintPositions = [];
+    }
+    
+    function getPixelColor(x, y) {
+      trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
+      let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
+      let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
+      let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
+      return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+    }
+    
+    // Fonction de conversion (pour l'instant retourne la valeur rgb)
+    function getColorName(rgb) {
+      // Ici, vous pourrez implémenter une fonction de conversion
+      // pour obtenir le nom de la couleur via un mélange type peinture à l'huile.
+      return rgb;
+    }
+    
+    function updateColorNames() {
+      let names = paintPositions.map(p => getColorName(p.color));
+      colorNameDiv.innerHTML = names.join('<br>');
+    }
+    
+    function drawPaint() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let p of paintPositions) {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (showColorName) {
+        updateColorNames();
+      }
+    }
+    
+    function detectTouches(event) {
+      event.preventDefault();
+      let touchCount = event.touches.length;
+      if (touchCount === 4) {
+        // 4 doigts : Arrêter la vidéo
+        videoElement.pause();
+      } else if (touchCount === 3) {
+        // 3 doigts : Changer de vidéo
+        changeVideo();
+      } else if (touchCount === 2) {
+        // 2 doigts : Effacer les pastilles et les noms
+        clearCanvas();
+        if (showColorName) {
+          colorNameDiv.innerHTML = "";
         }
-
-        function detectTouches(event) {
-            event.preventDefault();
-            let touchCount = event.touches.length;
-            if (touchCount === 1) {
-                let x = event.touches[0].clientX;
-                let y = event.touches[0].clientY;
-                let color = getPixelColor(x, y);
-                paintPositions.push({ x, y, color });
-                drawPaint();
-            } else if (touchCount === 2) {
-                clearCanvas();
-            } else if (touchCount === 3) {
-                changeVideo();
-            }
-        }
-
-        function getPixelColor(x, y) {
-            trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
-            let px = Math.floor((x / window.innerWidth) * trackingCanvas.width);
-            let py = Math.floor((y / window.innerHeight) * trackingCanvas.height);
-            let pixelData = trackingCtx.getImageData(px, py, 1, 1).data;
-            return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
-        }
-
-        function drawPaint() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let p of paintPositions) {
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            paintPositions = [];
-        }
-
-        toggleColorNameButton.addEventListener("click", () => {
-            showColorName = !showColorName;
-            colorNameDiv.style.display = showColorName ? "block" : "none";
-        });
-        
-        document.body.addEventListener('touchstart', detectTouches, { passive: false });
-        videoElement.src = videos[currentVideoIndex];
-    </script>
+      } else if (touchCount === 1) {
+        let x = event.touches[0].clientX;
+        let y = event.touches[0].clientY;
+        let color = getPixelColor(x, y);
+        paintPositions.push({ x, y, color });
+        drawPaint();
+      }
+    }
+    
+    // Gestion du clic souris (équivalent d'une touche unique)
+    canvas.addEventListener('click', function(event) {
+      let x = event.clientX;
+      let y = event.clientY;
+      let color = getPixelColor(x, y);
+      paintPositions.push({ x, y, color });
+      drawPaint();
+    });
+    
+    toggleColorNameButton.addEventListener("click", () => {
+      showColorName = !showColorName;
+      colorNameDiv.style.display = showColorName ? "block" : "none";
+      if (showColorName) {
+        updateColorNames();
+      }
+    });
+    
+    document.body.addEventListener('touchstart', detectTouches, { passive: false });
+    
+    videoElement.src = videos[currentVideoIndex];
+  </script>
 </body>
 </html>
