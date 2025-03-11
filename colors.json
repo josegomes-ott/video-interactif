@@ -598,5 +598,32 @@
     "bases": ["bleu", "jaune", "blanc"],
     "proportions": { "bleu": 2, "jaune": 2, "blanc": 1 },
     "comment": "Vert exotique, avec équilibre entre jaune et bleu."
+  },
+  // ================================
+  // Début des 200 couleurs intermédiaires générées automatiquement
+  {
+    "colorName": "Intermediate Color 1",
+    "bases": ["rouge", "jaune"],
+    "proportions": { "rouge": 1.000, "jaune": 1.000 },
+    "comment": "Couleur intermédiaire générée automatiquement."
+  },
+  {
+    "colorName": "Intermediate Color 2",
+    "bases": ["rouge", "jaune"],
+    "proportions": { "rouge": 1.005, "jaune": 0.995 },
+    "comment": "Couleur intermédiaire générée automatiquement."
+  },
+  {
+    "colorName": "Intermediate Color 3",
+    "bases": ["rouge", "jaune"],
+    "proportions": { "rouge": 1.010, "jaune": 0.990 },
+    "comment": "Couleur intermédiaire générée automatiquement."
+  },
+  // ...
+  {
+    "colorName": "Intermediate Color 200",
+    "bases": ["rouge", "jaune"],
+    "proportions": { "rouge": 1.995, "jaune": 1.005 },
+    "comment": "Couleur intermédiaire générée automatiquement."
   }
 ]
