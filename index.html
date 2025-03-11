@@ -5,61 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vidéo Interactive & Analyse des Couleurs</title>
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    video {
-      position: absolute;
-      max-width: 90vw;
-      max-height: 90vh;
-      object-fit: contain;
-      filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
-      transition: filter 0.2s ease-in-out;
-    }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      touch-action: none;
-    }
-    /* Bloc d'affichage en bas à droite */
-    #colorName {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 10px;
-      font-size: 18px;
-      border-radius: 5px;
-      display: none;
-      z-index: 1000;
-    }
-    .controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 1000;
-    }
-    .controls button {
-      padding: 10px;
-      background: white;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      border-radius: 5px;
-    }
+    body { margin: 0; overflow: hidden; background: black; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    video { position: absolute; max-width: 90vw; max-height: 90vh; object-fit: contain; filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg); transition: filter 0.2s ease-in-out; }
+    canvas { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; touch-action: none; }
+    #colorName { position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.7); color: white; padding: 10px; font-size: 18px; border-radius: 5px; display: none; z-index: 1000; }
+    .controls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+    .controls button { padding: 10px; background: white; border: none; cursor: pointer; font-size: 16px; border-radius: 5px; }
   </style>
 </head>
 <body>
@@ -93,11 +44,44 @@
     trackingCanvas.width = 320;
     trackingCanvas.height = 240;
     
-    // Chargement du fichier JSON contenant la base de données de couleurs
+    // Définition des couleurs de base
+    const baseColors = {
+      "rouge": { r: 255, g: 0, b: 0 },
+      "jaune": { r: 255, g: 255, b: 0 },
+      "bleu": { r: 0, g: 0, b: 255 },
+      "blanc": { r: 255, g: 255, b: 255 },
+      "noir": { r: 0, g: 0, b: 0 }
+    };
+    
+    // Fonction pour calculer la couleur résultante à partir des proportions
+    function computeColorFromMix(proportions) {
+      let total = 0, sumR = 0, sumG = 0, sumB = 0;
+      for (let base in proportions) {
+        let weight = proportions[base];
+        total += weight;
+        let col = baseColors[base];
+        if (col) {
+          sumR += col.r * weight;
+          sumG += col.g * weight;
+          sumB += col.b * weight;
+        }
+      }
+      return {
+        r: Math.round(sumR / total),
+        g: Math.round(sumG / total),
+        b: Math.round(sumB / total)
+      };
+    }
+    
+    // Chargement du fichier JSON contenant la base de données des couleurs
     fetch('colors.json')
       .then(response => response.json())
       .then(data => {
-        oilPaintColors = data;
+        // Pour chaque entrée, calculer les valeurs RGB à partir des proportions
+        oilPaintColors = data.map(entry => {
+          let computed = computeColorFromMix(entry.proportions);
+          return { ...entry, r: computed.r, g: computed.g, b: computed.b };
+        });
         console.log("Couleurs chargées :", oilPaintColors);
       })
       .catch(error => console.error("Erreur lors du chargement du fichier JSON :", error));
@@ -112,9 +96,7 @@
       videoElement.src = videos[currentVideoIndex];
       videoElement.loop = true;
       clearCanvas();
-      if (showColorName) {
-        colorNameDiv.innerHTML = "";
-      }
+      if (showColorName) { colorNameDiv.innerHTML = ""; }
       console.log("Vidéo changée, nouvel index :", currentVideoIndex);
     }
     
@@ -144,7 +126,6 @@
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
-      // Si la base de données n'est pas chargée, on retourne un message
       if (oilPaintColors.length === 0) return rgb + " - Base non chargée";
       let r = parseInt(parts[0]), g = parseInt(parts[1]), b = parseInt(parts[2]);
       let closest = null;
@@ -159,20 +140,18 @@
           closest = color;
         }
       });
-      // Ajustez ce seuil selon vos besoins (valeur entre 0 et ~441)
+      // Ajustez le seuil selon vos besoins (valeur de 0 à environ 441)
       if (minDist > 200) {  
         return rgb + " - Couleur non référencée";
       }
-      return closest ? closest.name + " (" + closest.mix + ")" : rgb;
+      return closest ? closest.colorName + " (" + closest.comment + ")" : rgb;
     }
     
-    // Combine la valeur RGB et le nom détaillé du mélange
     function getColorName(rgb) {
       let oilMix = getOilPaintMix(rgb);
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour le bloc d'affichage (en bas à droite) avec une pastille et le texte pour chaque couleur sélectionnée
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -193,9 +172,7 @@
         ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
         ctx.fill();
       }
-      if (showColorName) {
-        updateColorNames();
-      }
+      if (showColorName) { updateColorNames(); }
     }
     
     // Gestion des gestes tactiles sur le canvas
@@ -203,16 +180,16 @@
       event.preventDefault();
       if (gestureLock) return;
       let touchCount = event.touches.length;
-      if (touchCount >= 3) {  // 3 doigts ou plus : changement de vidéo
+      if (touchCount >= 3) {
         changeVideo();
         gestureLock = true;
         setTimeout(() => { gestureLock = false; }, 500);
-      } else if (touchCount === 2) { // 2 doigts : effacer les pastilles
+      } else if (touchCount === 2) {
         clearCanvas();
         if (showColorName) { colorNameDiv.innerHTML = ""; }
         gestureLock = true;
         setTimeout(() => { gestureLock = false; }, 500);
-      } else if (touchCount === 1) { // 1 doigt : ajouter une pastille
+      } else if (touchCount === 1) {
         let x = event.touches[0].clientX;
         let y = event.touches[0].clientY;
         let color = getPixelColor(x, y);
@@ -221,7 +198,6 @@
       }
     }, { passive: false });
     
-    // Gestion des clics souris sur le canvas (similaire au toucher 1 doigt)
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -230,7 +206,6 @@
       drawPaint();
     });
     
-    // Empêcher que le toucher sur le bouton ne déclenche une action sur le canvas
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
       e.preventDefault();
@@ -241,16 +216,12 @@
       toggleColorNameButton.click();
     });
     
-    // Gestion du clic sur le bouton d'affichage des noms de couleurs
     toggleColorNameButton.addEventListener("click", () => {
       showColorName = !showColorName;
       colorNameDiv.style.display = showColorName ? "block" : "none";
-      if (showColorName) {
-        updateColorNames();
-      }
+      if (showColorName) { updateColorNames(); }
     });
     
-    // Initialisation de la vidéo
     videoElement.src = videos[currentVideoIndex];
   </script>
 </body>
