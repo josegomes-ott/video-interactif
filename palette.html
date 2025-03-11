@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color API & Palette</title>
+  <!-- Inclusion de chroma.js pour faciliter la conversion RGB -> HEX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: #222; 
+      color: #eee; 
+      font-family: sans-serif;
+    }
+    video { 
+      position: absolute; 
+      max-width: 90vw; 
+      max-height: 90vh; 
+      object-fit: contain; 
+      filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
+      transition: filter 0.2s ease-in-out;
+    }
+    canvas { 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      touch-action: none;
+    }
+    #colorInfo { 
+      position: fixed; 
+      bottom: 20px; 
+      left: 20px; 
+      background: rgba(0,0,0,0.8); 
+      padding: 10px; 
+      border-radius: 5px; 
+      max-width: 350px;
+      z-index: 1000;
+    }
+    #palette {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      z-index: 1000;
+    }
+    .swatch {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+    #loading {
+      position: fixed; 
+      top: 10px; 
+      left: 10px; 
+      color: white; 
+      font-size: 18px; 
+      z-index: 1000;
+    }
+    .controls {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+    .controls button {
+      padding: 10px;
+      background: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Pour cet exemple, nous utilisons le canvas pour simuler une image -->
+  <canvas id="canvas"></canvas>
+  <div id="colorInfo">Cliquez sur le canvas pour obtenir la couleur.</div>
+  <div id="palette">Palette sauvegardée</div>
+  <div id="loading">Chargement de la base de couleurs...</div>
+  <div class="controls">
+    <button id="clearPalette">Effacer la palette</button>
+  </div>
+  
+  <script>
+    // Configuration du canvas
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Pour cet exemple, on crée un dégradé sur le canvas
+    let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, "red");
+    gradient.addColorStop(0.5, "green");
+    gradient.addColorStop(1, "blue");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Références aux éléments d'interface
+    const colorInfoDiv = document.getElementById('colorInfo');
+    const paletteDiv = document.getElementById('palette');
+    const loadingDiv = document.getElementById('loading');
+    const clearPaletteButton = document.getElementById('clearPalette');
+
+    // Base de données des couleurs (vous pouvez l'enrichir ou la charger depuis un fichier JSON)
+    // Pour cet exemple, nous ne montrons pas l'appel au JSON, mais vous pouvez combiner avec le code précédent
+    // Nous simulons ici que la base est déjà chargée.
+    let baseLoaded = true;  // Simuler que la base est chargée
+
+    // Exemple d'utilisation de The Color API
+    function getColorInfoFromAPI(hexColor) {
+      let cleanHex = hexColor.replace("#", "");
+      // Utilisation de HTTPS pour éviter le "mixed content"
+      let url = "https://www.thecolorapi.com/id?hex=" + cleanHex;
+      return fetch(url).then(response => response.json());
+    }
+
+    // Gestion du clic sur le canvas
+    canvas.addEventListener('click', (event) => {
+      let rect = canvas.getBoundingClientRect();
+      let x = event.clientX - rect.left;
+      let y = event.clientY - rect.top;
+      let pixelData = ctx.getImageData(x, y, 1, 1).data;
+      let rgb = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+      let hex = chroma(rgb).hex();
+      // Affichage initial
+      colorInfoDiv.innerHTML = `<strong>Couleur extraite :</strong> ${hex} (${rgb})<br>Recherche en cours... <br><button id="saveColor">Sauvegarder la couleur</button>`;
+      
+      // Appel à l'API
+      getColorInfoFromAPI(hex)
+        .then(data => {
+          let colorName = data.name.value;
+          let exact = data.name.exact_match ? "Exact" : "Approximation";
+          colorInfoDiv.innerHTML = `<strong>Couleur extraite :</strong> ${hex} (${rgb})<br>
+            <strong>Nom suggéré :</strong> ${colorName}<br>
+            <strong>Exactitude :</strong> ${exact}<br>
+            <button id="saveColor">Sauvegarder la couleur</button>`;
+          // Attacher l'événement de sauvegarde
+          document.getElementById('saveColor').addEventListener('click', () => {
+            addColorToPalette(hex);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          colorInfoDiv.textContent = "Erreur lors de la recherche de la couleur";
+        });
+    });
+
+    // Ajoute la couleur sauvegardée dans la palette
+    function addColorToPalette(hex) {
+      let swatch = document.createElement('div');
+      swatch.className = "swatch";
+      swatch.style.backgroundColor = hex;
+      // Au clic sur la pastille, affiche les informations de la couleur (via l'API)
+      swatch.addEventListener('click', () => {
+        getColorInfoFromAPI(hex)
+          .then(data => {
+            let colorName = data.name.value;
+            let exact = data.name.exact_match ? "Exact" : "Approximation";
+            colorInfoDiv.innerHTML = `<strong>Couleur sauvegardée :</strong> ${hex}<br>
+              <strong>Nom suggéré :</strong> ${colorName}<br>
+              <strong>Exactitude :</strong> ${exact}`;
+          })
+          .catch(err => {
+            console.error(err);
+            colorInfoDiv.textContent = "Erreur lors de la recherche de la couleur";
+          });
+      });
+      paletteDiv.appendChild(swatch);
+    }
+
+    // Bouton pour effacer la palette
+    clearPaletteButton.addEventListener('click', () => {
+      paletteDiv.innerHTML = "Palette sauvegardée";
+    });
+  </script>
+</body>
+</html>
