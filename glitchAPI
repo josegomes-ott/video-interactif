@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Colorist - Frontend</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; background: #222; color: #eee; font-family: sans-serif; }
+    #canvas { display: block; }
+    #result { position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="result">Cliquez sur le canvas pour analyser la couleur.</div>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const resultDiv = document.getElementById('result');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Remplir le canvas avec un dégradé pour l'exemple
+    let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, "red");
+    gradient.addColorStop(0.5, "green");
+    gradient.addColorStop(1, "blue");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    canvas.addEventListener('click', (event) => {
+      let rect = canvas.getBoundingClientRect();
+      let x = event.clientX - rect.left;
+      let y = event.clientY - rect.top;
+      let pixel = ctx.getImageData(x, y, 1, 1).data;
+      let rgb = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+      let hex = chroma(rgb).hex().replace("#", "");
+      
+      resultDiv.innerHTML = `Couleur extraite : #${hex} (${rgb}). Recherche en cours...`;
+      
+      // Remplacez <votre-projet> par l'URL de votre projet Glitch
+      fetch(`https://<votre-projet>.glitch.me/api/colors/compare?hex=${hex}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.match) {
+            resultDiv.innerHTML = `<strong>Couleur extraite :</strong> #${hex} (${rgb})<br>
+              <strong>Meilleure correspondance :</strong> ${data.match.colorName} (ΔE=${data.deltaE.toFixed(1)})<br>
+              <strong>Description :</strong> ${data.match.comment}<br>
+              <strong>Proportions :</strong> ${Object.entries(data.match.proportions).map(([base, qty]) => `${base}: ${qty}`).join(", ")}`;
+          } else {
+            resultDiv.innerHTML = `Couleur extraite : #${hex} (${rgb})<br>${data.message} (ΔE=${data.deltaE.toFixed(1)})`;
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          resultDiv.textContent = "Erreur lors de l'appel à l'API.";
+        });
+    });
+  </script>
+</body>
+</html>
