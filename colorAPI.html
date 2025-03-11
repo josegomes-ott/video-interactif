@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color API Demo</title>
+  <!-- Inclusion de chroma.js pour faciliter la conversion RGB -> HEX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
+  <style>
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: #222; 
+      color: #eee; 
+      font-family: sans-serif;
+    }
+    #canvas { display: block; }
+    #colorInfo { 
+      position: fixed; 
+      bottom: 20px; 
+      left: 20px; 
+      background: rgba(0,0,0,0.8); 
+      padding: 10px; 
+      border-radius: 5px; 
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="colorInfo">Cliquez sur le canvas pour obtenir des informations sur la couleur</div>
+  
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const colorInfoDiv = document.getElementById('colorInfo');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Pour l'exemple, on remplit le canvas avec un dégradé
+    let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, "red");
+    gradient.addColorStop(0.5, "green");
+    gradient.addColorStop(1, "blue");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Fonction pour appeler The Color API avec une couleur hexadécimale
+    function getColorInfoFromAPI(hexColor) {
+      // Supprime le "#" si présent
+      let cleanHex = hexColor.replace("#", "");
+      // L'API de The Color API (vous pouvez ajouter des paramètres supplémentaires si besoin)
+      let url = "http://www.thecolorapi.com/id?hex=" + cleanHex;
+      return fetch(url)
+             .then(response => response.json());
+    }
+    
+    // Gestion du clic sur le canvas
+    canvas.addEventListener('click', (event) => {
+      let rect = canvas.getBoundingClientRect();
+      let x = event.clientX - rect.left;
+      let y = event.clientY - rect.top;
+      let pixelData = ctx.getImageData(x, y, 1, 1).data;
+      let rgb = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+      let hex = chroma(rgb).hex();
+      
+      // Affichage immédiat de la couleur extraite
+      colorInfoDiv.innerHTML = `<strong>Couleur extraite :</strong> ${hex} (${rgb})<br>Recherche en cours...`;
+      
+      // Appel à The Color API
+      getColorInfoFromAPI(hex)
+        .then(data => {
+          // La réponse contient par exemple data.name.value (nom de la couleur)
+          let colorName = data.name.value;
+          // Vous pouvez récupérer d'autres informations, comme data.hex.value, data.rgb.value, etc.
+          colorInfoDiv.innerHTML = `<strong>Couleur extraite :</strong> ${hex} (${rgb})<br>
+            <strong>Nom suggéré :</strong> ${colorName}<br>
+            <strong>Exactitude :</strong> ${data.name.exact_match ? "Exact" : "Approximation"}`;
+        })
+        .catch(err => {
+          console.error(err);
+          colorInfoDiv.textContent = "Erreur lors de la recherche de la couleur";
+        });
+    });
+  </script>
+</body>
+</html>
