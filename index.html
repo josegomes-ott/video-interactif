@@ -83,6 +83,7 @@
     let showColorName = false;
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
     let paintPositions = [];
+    let gestureHandled = false;
     
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -116,10 +117,9 @@
       paintPositions = [];
     }
     
-    // Renvoie la couleur du pixel en tenant compte de la position réelle de la vidéo
+    // Récupère la couleur du pixel en tenant compte de la position réelle de la vidéo
     function getPixelColor(x, y) {
       const rect = videoElement.getBoundingClientRect();
-      // Si le point n'est pas dans la zone de la vidéo, on retourne du noir
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
         return "rgb(0, 0, 0)";
       }
@@ -127,7 +127,6 @@
       const relativeY = y - rect.top;
       const videoWidth = rect.width;
       const videoHeight = rect.height;
-      // Conversion en coordonnées du trackingCanvas
       let px = Math.floor((relativeX / videoWidth) * trackingCanvas.width);
       let py = Math.floor((relativeY / videoHeight) * trackingCanvas.height);
       trackingCtx.drawImage(videoElement, 0, 0, trackingCanvas.width, trackingCanvas.height);
@@ -135,7 +134,7 @@
       return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
     }
     
-    // Renvoie le nom de la couleur de base la plus proche pour le mélange de peinture à l'huile
+    // Compare la couleur obtenue à une liste de couleurs de base pour trouver le mélange le plus proche
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
@@ -161,7 +160,7 @@
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour l'affichage du bloc colorName avec une pastille et le texte (RGB + mélange)
+    // Met à jour le bloc d'affichage avec pour chaque pastille sa couleur et le texte associé
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -187,27 +186,31 @@
       }
     }
     
+    // Détection des gestes multi-touch
     function detectTouches(event) {
       event.preventDefault();
+      if (gestureHandled) return;
       let touchCount = event.touches.length;
       if (touchCount === 4) {
-        // 4 doigts : Geler la vidéo exactement au timing actuel
+        // 4 doigts : Geler la vidéo exactement au frame actuel
         if (!videoElement.paused) {
           let currentFrameTime = videoElement.currentTime;
           videoElement.pause();
-          // Repositionnement pour forcer l'affichage de l'image exacte
           videoElement.currentTime = currentFrameTime;
           videoElement.loop = false;
         }
+        gestureHandled = true;
       } else if (touchCount === 3) {
         // 3 doigts : Changer de vidéo
         changeVideo();
+        gestureHandled = true;
       } else if (touchCount === 2) {
         // 2 doigts : Effacer les pastilles et réinitialiser l'affichage
         clearCanvas();
         if (showColorName) {
           colorNameDiv.innerHTML = "";
         }
+        gestureHandled = true;
       } else if (touchCount === 1) {
         let x = event.touches[0].clientX;
         let y = event.touches[0].clientY;
@@ -217,7 +220,17 @@
       }
     }
     
-    // Gestion du clic souris (équivalent à un toucher à 1 doigt)
+    // Réinitialise le flag une fois tous les doigts levés
+    document.body.addEventListener('touchend', function(event) {
+      if (event.touches.length === 0) {
+        gestureHandled = false;
+      }
+    });
+    
+    // Écouteur pour les gestes tactiles
+    document.body.addEventListener('touchstart', detectTouches, { passive: false });
+    
+    // Gestion des clics souris
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -226,6 +239,16 @@
       drawPaint();
     });
     
+    // Gestion du bouton pour le tactile (éviter que le toucher sur le bouton soit traité sur le canvas)
+    toggleColorNameButton.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    });
+    toggleColorNameButton.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+      toggleColorNameButton.click();
+    });
+    
+    // Gestion du clic sur le bouton
     toggleColorNameButton.addEventListener("click", () => {
       showColorName = !showColorName;
       colorNameDiv.style.display = showColorName ? "block" : "none";
@@ -233,8 +256,6 @@
         updateColorNames();
       }
     });
-    
-    document.body.addEventListener('touchstart', detectTouches, { passive: false });
     
     videoElement.src = videos[currentVideoIndex];
   </script>
