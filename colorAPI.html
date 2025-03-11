@@ -50,7 +50,7 @@
       // Supprime le "#" si présent
       let cleanHex = hexColor.replace("#", "");
       // L'API de The Color API (vous pouvez ajouter des paramètres supplémentaires si besoin)
-      let url = "http://www.thecolorapi.com/id?hex=" + cleanHex;
+      let url = "https://www.thecolorapi.com/id?hex=" + cleanHex;
       return fetch(url)
              .then(response => response.json());
     }
