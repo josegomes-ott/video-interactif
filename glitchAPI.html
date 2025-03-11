@@ -40,22 +40,19 @@
       resultDiv.innerHTML = `Couleur extraite : #${hex} (${rgb}). Recherche en cours...`;
       
       // Remplacez <votre-projet> par l'URL de votre projet Glitch
-      fetch(`https://mellow-chalk-neon.glitch.me/api/colors/compare?hex=${hex}`)
+      fetch(`https://mellow-chalk-neon.glitch.me/api/external-color?hex=${hex}`)
         .then(response => response.json())
         .then(data => {
-          if (data.match) {
-            resultDiv.innerHTML = `<strong>Couleur extraite :</strong> #${hex} (${rgb})<br>
-              <strong>Meilleure correspondance :</strong> ${data.match.colorName} (ΔE=${data.deltaE.toFixed(1)})<br>
-              <strong>Description :</strong> ${data.match.comment}<br>
-              <strong>Proportions :</strong> ${Object.entries(data.match.proportions).map(([base, qty]) => `${base}: ${qty}`).join(", ")}`;
-          } else {
-            resultDiv.innerHTML = `Couleur extraite : #${hex} (${rgb})<br>${data.message} (ΔE=${data.deltaE.toFixed(1)})`;
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          resultDiv.textContent = "Erreur lors de l'appel à l'API.";
-        });
+        // Affichez par exemple data.name.value, data.hex.value, etc.
+        resultDiv.innerHTML = `<strong>Couleur extraite :</strong> #${hex} (${rgb})<br>
+          <strong>Nom suggéré :</strong> ${data.name.value}<br>
+          <strong>Exactitude :</strong> ${data.name.exact_match ? "Exact" : "Approximation"}`;
+      })
+      .catch(err => {
+       console.error(err);
+       resultDiv.textContent = "Erreur lors de l'appel à l'API externe.";
+      });
+
     });
   </script>
 </body>
