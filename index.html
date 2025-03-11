@@ -37,7 +37,7 @@
     let currentVideoIndex = Math.floor(Math.random() * videos.length);
     let paintPositions = [];
     let gestureLock = false; // Pour éviter les déclenchements multiples
-    let oilPaintColors = []; // La base de données sera chargée depuis le fichier JSON
+    let oilPaintColors = []; // Base de données chargée depuis le fichier JSON
     
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -71,6 +71,13 @@
         g: Math.round(sumG / total),
         b: Math.round(sumB / total)
       };
+    }
+    
+    // Fonction pour formater les proportions en chaîne de caractères
+    function formatProportions(proportions) {
+      return Object.entries(proportions)
+                   .map(([base, qty]) => `${base}: ${qty}`)
+                   .join(", ");
     }
     
     // Chargement du fichier JSON contenant la base de données des couleurs
@@ -122,7 +129,7 @@
       return `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
     }
     
-    // Recherche dans la base de données la nuance la plus proche
+    // Recherche dans la base de données la nuance la plus proche et ajoute les proportions formatées
     function getOilPaintMix(rgb) {
       let parts = rgb.match(/\d+/g);
       if (!parts || parts.length < 3) return rgb;
@@ -140,11 +147,12 @@
           closest = color;
         }
       });
-      // Ajustez le seuil selon vos besoins (valeur de 0 à environ 441)
-      if (minDist > 200) {  
+      // Ajustez le seuil ici si nécessaire (0 à environ 441)
+      if (minDist > 50) {  
         return rgb + " - Couleur non référencée";
       }
-      return closest ? closest.colorName + " (" + closest.comment + ")" : rgb;
+      let propString = formatProportions(closest.proportions);
+      return closest ? `${closest.colorName} (${closest.comment}) - Proportions: ${propString}` : rgb;
     }
     
     function getColorName(rgb) {
@@ -198,6 +206,7 @@
       }
     }, { passive: false });
     
+    // Gestion des clics souris sur le canvas
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -206,6 +215,7 @@
       drawPaint();
     });
     
+    // Empêcher que le toucher sur le bouton ne déclenche une action sur le canvas
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
       e.preventDefault();
