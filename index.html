@@ -30,12 +30,12 @@
       height: 100vh;
       touch-action: none;
     }
-    /* Bloc affichage en bas à droite */
+    /* Bloc d'affichage en bas à droite */
     #colorName {
       position: absolute;
       bottom: 20px;
       right: 20px;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0,0,0,0.7);
       color: white;
       padding: 10px;
       font-size: 18px;
@@ -105,7 +105,7 @@
     function changeVideo() {
       currentVideoIndex = (currentVideoIndex + 1) % videos.length;
       videoElement.src = videos[currentVideoIndex];
-      videoElement.loop = true; // on réactive le loop pour la nouvelle vidéo
+      videoElement.loop = true; // Réactive le loop pour la nouvelle vidéo
       clearCanvas();
       if (showColorName) {
         colorNameDiv.innerHTML = "";
@@ -160,7 +160,7 @@
       return `${rgb} - ${oilMix}`;
     }
     
-    // Met à jour le bloc d'affichage avec pour chaque pastille sa couleur et le texte associé
+    // Met à jour le bloc d'affichage des couleurs avec pastille et texte
     function updateColorNames() {
       let html = "";
       for (let p of paintPositions) {
@@ -186,13 +186,23 @@
       }
     }
     
-    // Détection des gestes multi-touch
+    // Gestion des gestes sur le canvas
+    canvas.addEventListener('touchstart', detectTouches, { passive: false });
+    canvas.addEventListener('touchend', function(event) {
+      if (event.touches.length === 0) {
+        gestureHandled = false;
+      }
+    });
+    
     function detectTouches(event) {
       event.preventDefault();
+      // On ne traite que si l'événement provient bien du canvas
+      if (event.target !== canvas) return;
+      
       if (gestureHandled) return;
       let touchCount = event.touches.length;
       if (touchCount === 4) {
-        // 4 doigts : Geler la vidéo exactement au frame actuel
+        // 4 doigts : Figer la vidéo exactement au frame actuel
         if (!videoElement.paused) {
           let currentFrameTime = videoElement.currentTime;
           videoElement.pause();
@@ -220,17 +230,7 @@
       }
     }
     
-    // Réinitialise le flag une fois tous les doigts levés
-    document.body.addEventListener('touchend', function(event) {
-      if (event.touches.length === 0) {
-        gestureHandled = false;
-      }
-    });
-    
-    // Écouteur pour les gestes tactiles
-    document.body.addEventListener('touchstart', detectTouches, { passive: false });
-    
-    // Gestion des clics souris
+    // Gestion des clics souris sur le canvas
     canvas.addEventListener('click', function(event) {
       let x = event.clientX;
       let y = event.clientY;
@@ -239,12 +239,14 @@
       drawPaint();
     });
     
-    // Gestion du bouton pour le tactile (éviter que le toucher sur le bouton soit traité sur le canvas)
+    // Gestion du bouton pour le tactile
     toggleColorNameButton.addEventListener('touchstart', function(e) {
       e.stopPropagation();
+      e.preventDefault();
     });
     toggleColorNameButton.addEventListener('touchend', function(e) {
       e.stopPropagation();
+      e.preventDefault();
       toggleColorNameButton.click();
     });
     
