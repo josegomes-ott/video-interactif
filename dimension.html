@@ -2,52 +2,63 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <!-- Permet un affichage adapté sur mobile -->
+  <!-- Pour un affichage adapté sur mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lecture en boucle de 8 vidéos</title>
+  <title>Lecture continue de 8 vidéos</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      background: #000;
       height: 100%;
+      background: #000;
       overflow: hidden;
     }
-    video {
+    #videoContainer {
+      position: relative;
       width: 100vw;
       height: 100vh;
-      object-fit: cover;
       background: #000;
     }
-    /* Overlay pour demander l'interaction utilisateur */
-    #overlay {
-      position: fixed;
+    video {
+      position: absolute;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    video.active {
+      opacity: 1;
+    }
+    /* Overlay pour demander l'interaction utilisateur au démarrage */
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: rgba(0,0,0,0.8);
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
       font-size: 24px;
-      z-index: 100;
       cursor: pointer;
+      z-index: 100;
     }
   </style>
 </head>
 <body>
-  <!-- Overlay qui demande à l'utilisateur de démarrer la lecture -->
   <div id="overlay">Cliquez ou touchez pour démarrer</div>
-  
-  <!-- Élément vidéo -->
-  <video id="videoPlayer" controls playsinline>
-    Votre navigateur ne supporte pas la vidéo.
-  </video>
+  <div id="videoContainer">
+    <video id="video1" playsinline></video>
+    <video id="video2" playsinline></video>
+  </div>
 
   <script>
-    // Liste des 8 vidéos à lire (assurez-vous que les fichiers sont accessibles)
+    // Liste des 8 vidéos à lire
     const videos = [
       'dimension1.mp4',
       'dimension2.mp4',
@@ -60,44 +71,75 @@
     ];
 
     let currentIndex = 0;
-    const videoPlayer = document.getElementById('videoPlayer');
+    // On alterne entre les deux éléments vidéo
+    let activeVideo = 1; // 1 ou 2
+
+    const video1 = document.getElementById('video1');
+    const video2 = document.getElementById('video2');
     const overlay = document.getElementById('overlay');
 
-    // Fonction qui charge et lance la vidéo en fonction de l'index
-    function playVideo(index) {
-      console.log("Lecture de : " + videos[index]);
-      videoPlayer.src = videos[index];
-      videoPlayer.load();
-      videoPlayer.play().then(() => {
-        console.log("Lecture démarrée pour " + videos[index]);
-      }).catch(error => {
-        console.error("Erreur lors de la lecture de " + videos[index], error);
-        // En cas d'erreur (par exemple, si le navigateur bloque l'autoplay), afficher l'overlay pour relancer
-        overlay.style.display = 'flex';
-        overlay.textContent = "Cliquez pour continuer";
-      });
+    // Renvoie l'élément vidéo actuellement affiché
+    function getActiveVideoElement() {
+      return activeVideo === 1 ? video1 : video2;
+    }
+    // Renvoie l'élément vidéo inactif (celui qui servira à précharger la prochaine vidéo)
+    function getInactiveVideoElement() {
+      return activeVideo === 1 ? video2 : video1;
     }
 
-    // Événement déclenché à la fin d'une vidéo
-    videoPlayer.addEventListener('ended', () => {
-      console.log("Vidéo terminée : " + videos[currentIndex]);
-      currentIndex++;
-      if (currentIndex >= videos.length) {
-        console.log("Fin de la liste, pause de 5 secondes");
-        setTimeout(() => {
-          currentIndex = 0;
-          playVideo(currentIndex);
-        }, 5000);
-      } else {
-        playVideo(currentIndex);
-      }
-    });
+    // Charge une vidéo dans un élément donné
+    function loadVideo(videoElement, src) {
+      videoElement.src = src;
+      videoElement.load();
+    }
 
-    // Dès la première interaction (clic ou toucher), masquer l'overlay et lancer la lecture
-    overlay.addEventListener('pointerdown', () => {
+    // Bascule entre les deux vidéos (pour un effet de fondu)
+    function switchVideo() {
+      activeVideo = activeVideo === 1 ? 2 : 1;
+      getActiveVideoElement().classList.add('active');
+      getInactiveVideoElement().classList.remove('active');
+    }
+
+    // Fonction de démarrage qui lance la lecture de la première vidéo et précharge la suivante
+    function startPlayback() {
       overlay.style.display = 'none';
-      playVideo(currentIndex);
-    });
+      
+      // Charge la première vidéo dans video1
+      loadVideo(video1, videos[currentIndex]);
+      video1.classList.add('active');
+      video1.play().catch(err => console.error(err));
+      
+      // Précharge la suivante dans video2 (si disponible)
+      let nextIndex = (currentIndex + 1) % videos.length;
+      loadVideo(video2, videos[nextIndex]);
+
+      // Écoute l'événement 'ended' sur les deux vidéos
+      video1.addEventListener('ended', onVideoEnded);
+      video2.addEventListener('ended', onVideoEnded);
+    }
+
+    function onVideoEnded() {
+      // Mise à jour de l'index courant
+      currentIndex = (currentIndex + 1) % videos.length;
+      
+      // L'élément inactif est préchargé avec la prochaine vidéo à jouer
+      const inactiveVideo = getInactiveVideoElement();
+      inactiveVideo.play().then(() => {
+        // Dès que la vidéo inactif se lance, on effectue le basculement
+        switchVideo();
+      }).catch(err => {
+        console.error("Erreur lors de la lecture de la vidéo :", err);
+      });
+
+      // Précharge la vidéo suivante dans l'élément désormais inactif
+      let nextIndex = (currentIndex + 1) % videos.length;
+      loadVideo(getInactiveVideoElement(), videos[nextIndex]);
+    }
+
+    overlay.addEventListener('pointerdown', () => {
+      startPlayback();
+    }, { once: true });
   </script>
 </body>
 </html>
+
