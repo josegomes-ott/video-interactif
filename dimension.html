@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <!-- Assure un affichage adapté sur mobile -->
+  <!-- Pour un affichage adapté sur mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lecteur vidéo en boucle</title>
   <style>
@@ -22,14 +22,14 @@
       object-fit: cover;
       background: #000;
     }
-    /* Overlay qui sert à démarrer ou relancer la lecture */
+    /* Overlay servant à initier la lecture */
     #overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0,0,0,0.8);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -38,7 +38,7 @@
       cursor: pointer;
       z-index: 100;
     }
-    /* QR Code en bas à droite */
+    /* QR Code en bas à droite (à adapter) */
     #qr-code {
       position: fixed;
       bottom: 10px;
@@ -54,17 +54,17 @@
   </style>
 </head>
 <body>
-  <!-- Overlay initial pour démarrer la lecture -->
+  <!-- Overlay pour démarrer la lecture -->
   <div id="overlay">Cliquez ou touchez pour démarrer</div>
   
   <!-- Élément vidéo principal -->
   <video id="videoPlayer" controls></video>
   
-  <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée) -->
-  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
+  <!-- QR Code (remplacez la chaîne Base64 par la vôtre) -->
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
-    // Liste des vidéos à lire
+    // Liste des vidéos à lire (à placer dans le même dossier ou ajuster le chemin)
     const videos = [
       'dimension1.mp4',
       'dimension2.mp4',
@@ -79,29 +79,42 @@
     let currentIndex = 0;
     const videoPlayer = document.getElementById('videoPlayer');
     const overlay = document.getElementById('overlay');
+    let audioCtx; // pour débloquer l'audio
     
-    // Démarre la lecture dès qu'une interaction utilisateur est détectée
+    // Initialisation du contexte audio et connexion du flux audio de la vidéo
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaElementSource(videoPlayer);
+        source.connect(audioCtx.destination);
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      }
+    }
+    
+    // Fonction déclenchée par la première interaction utilisateur
     function startPlayback() {
-      console.log("Démarrage de la lecture");
       overlay.removeEventListener('pointerdown', startPlayback);
       overlay.style.display = 'none';
+      initAudio();
       playVideo(currentIndex);
     }
     
     overlay.addEventListener('pointerdown', startPlayback, false);
     
-    // Fonction qui charge et lance la vidéo indiquée par son index
+    // Fonction pour charger et lancer la vidéo par son index
     function playVideo(index) {
-      console.log("Tentative de lecture de : " + videos[index]);
+      console.log("Lecture de : " + videos[index]);
       videoPlayer.src = videos[index];
       videoPlayer.load();
       videoPlayer.play().then(() => {
         console.log("Lecture lancée pour " + videos[index]);
       }).catch(error => {
         console.error("Erreur lors de la lecture de " + videos[index], error);
-        // En cas d'échec (autoplay bloqué), afficher l'overlay pour demander une nouvelle interaction
+        // En cas d'erreur, afficher un message pour tenter de relancer la lecture
         overlay.style.display = 'flex';
-        overlay.innerHTML = 'Cliquez pour continuer la lecture';
+        overlay.textContent = "Erreur de lecture. Cliquez pour réessayer.";
         overlay.addEventListener('pointerdown', () => {
           overlay.style.display = 'none';
           playVideo(index);
@@ -109,7 +122,7 @@
       });
     }
     
-    // Passage à la vidéo suivante à la fin de la lecture
+    // Enchaînement des vidéos : à la fin de chaque vidéo, lancer la suivante (avec pause de 5 sec après la dernière)
     videoPlayer.addEventListener('ended', () => {
       console.log("Vidéo terminée : " + videos[currentIndex]);
       currentIndex++;
@@ -124,7 +137,7 @@
       }
     });
     
-    // Gestionnaire d'erreur de chargement de la vidéo
+    // Gestion des erreurs de chargement
     videoPlayer.addEventListener('error', (e) => {
       console.error("Erreur lors du chargement de la vidéo " + videos[currentIndex], e);
     });
