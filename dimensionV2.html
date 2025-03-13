@@ -2,21 +2,21 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <!-- Pour un affichage adapté sur mobile -->
+  <!-- Assure un affichage adapté sur mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lecteur de 8 vidéos en boucle</title>
+  <title>Lecture continue de 8 vidéos</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
       background: #000;
+      height: 100%;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
-    /* Overlay qui demande une interaction pour démarrer la vidéo */
+    /* Overlay qui demande une interaction pour démarrer la lecture */
     #overlay {
       position: fixed;
       top: 0;
@@ -45,10 +45,10 @@
   <div id="overlay">Cliquez ou touchez pour démarrer</div>
 
   <!-- Élément vidéo unique -->
-  <video id="videoPlayer" playsinline webkit-playsinline controls></video>
+  <video id="videoPlayer" playsinline webkit-playsinline preload="auto"></video>
 
   <script>
-    // Liste des 8 vidéos à lire
+    // Liste des vidéos à lire (assurez-vous que les fichiers sont accessibles)
     const videos = [
       'dimension1.mp4',
       'dimension2.mp4',
@@ -59,12 +59,25 @@
       'dimension7.mp4',
       'dimension8.mp4'
     ];
-    
+
     let currentIndex = 0;
     const videoPlayer = document.getElementById('videoPlayer');
     const overlay = document.getElementById('overlay');
 
-    // Fonction pour lancer la lecture d'une vidéo donnée
+    // Fonction qui débloque le contexte audio (pour iOS et autres)
+    function initAudio() {
+      if (window.AudioContext || window.webkitAudioContext) {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Crée une source MediaElement à partir de la vidéo pour débloquer le son
+        const source = audioCtx.createMediaElementSource(videoPlayer);
+        source.connect(audioCtx.destination);
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      }
+    }
+
+    // Fonction pour lancer la lecture de la vidéo courante
     function playVideo(index) {
       console.log("Lecture de : " + videos[index]);
       videoPlayer.src = videos[index];
@@ -76,7 +89,7 @@
       });
     }
 
-    // À la fin d'une vidéo, passe à la suivante
+    // Gestion de l'événement "ended" pour passer à la vidéo suivante
     videoPlayer.addEventListener('ended', () => {
       console.log("Vidéo terminée : " + videos[currentIndex]);
       currentIndex++;
@@ -91,13 +104,14 @@
       }
     });
 
-    // Dès la première interaction, cache l'overlay et démarre la lecture
+    // Fonction de démarrage appelée par la première interaction
     function startPlayback() {
       overlay.style.display = 'none';
+      initAudio(); // Débloque le contexte audio dès le départ
       playVideo(currentIndex);
     }
 
-    // On écoute plusieurs types d'interaction pour maximiser la compatibilité mobile
+    // On écoute plusieurs types d'événements pour maximiser la compatibilité mobile
     overlay.addEventListener('click', startPlayback);
     overlay.addEventListener('touchstart', startPlayback);
   </script>
