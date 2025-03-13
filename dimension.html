@@ -18,6 +18,7 @@
       width: 100vw;
       height: 100vh;
       object-fit: cover;
+      background: #000;
     }
     /* Style pour le QR code affiché dans le coin inférieur droit */
     #qr-code {
@@ -54,11 +55,11 @@
   <!-- Overlay pour démarrer la lecture -->
   <div id="overlay">Cliquez ou touchez pour démarrer</div>
   
-  <!-- Élément vidéo principal -->
-  <video id="videoPlayer" playsinline></video>
+  <!-- Élément vidéo principal avec un poster pour vérifier son affichage -->
+  <video id="videoPlayer" playsinline poster="poster.jpg"></video>
   
   <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée) -->
-  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
     // Tableau des chemins des 8 vidéos à lire
@@ -89,6 +90,7 @@
     
     // Fonction qui charge et lance la vidéo selon l'index
     function playVideo(index) {
+      console.log("Lecture de la vidéo :", videos[index]);
       videoPlayer.src = videos[index];
       videoPlayer.load();
       videoPlayer.play().catch(error => {
@@ -108,6 +110,11 @@
       } else {
         playVideo(currentIndex);
       }
+    });
+    
+    // Écouteur pour détecter les erreurs de chargement de la vidéo
+    videoPlayer.addEventListener('error', (e) => {
+      console.error("Erreur de chargement de la vidéo :", e);
     });
   </script>
 </body>
