@@ -1,18 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>Lecteur de vidéos en boucle avec son</title>
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       background-color: #000;
+      overflow: hidden;
     }
     video {
-      width: 100%;
-      height: auto;
-      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
     }
     /* Style pour le QR code affiché dans le coin inférieur droit */
     #qr-code {
@@ -25,8 +30,9 @@
       background: #fff;
       padding: 5px;
       box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      z-index: 10;
     }
-    /* Overlay pour lancer la lecture avec le son */
+    /* Overlay pour démarrer la lecture (click ou toucher) */
     #overlay {
       position: fixed;
       top: 0;
@@ -40,57 +46,64 @@
       justify-content: center;
       font-size: 24px;
       cursor: pointer;
-      z-index: 9999;
+      z-index: 100;
     }
   </style>
 </head>
 <body>
-  <!-- Overlay qui demande un clic pour démarrer la lecture -->
-  <div id="overlay">Cliquez pour démarrer</div>
+  <!-- Overlay pour démarrer la lecture (cliquez ou touchez) -->
+  <div id="overlay">Cliquez ou touchez pour démarrer</div>
   
   <!-- Élément vidéo principal sans l'attribut muted -->
-  <video id="videoPlayer" controls playsinline></video>
+  <video id="videoPlayer" playsinline></video>
   
-  <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée par votre script) -->
-  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
+  <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée) -->
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
-    // Tableau contenant les chemins des 8 vidéos à lire
-     const videos = [
-      'dimension 1.mp4',
-      'dimensio2.mp4',
-      'dimensio3.mp4',
-      'dimensio4.mp4',
-      'dimensio5.mp4',
-      'dimensio6.mp4',
-      'dimensio7.mp4',
-      'dimensio8.mp4'
+    // Tableau des chemins des 8 vidéos à lire
+    const videos = [
+      'video1.mp4',
+      'video2.mp4',
+      'video3.mp4',
+      'video4.mp4',
+      'video5.mp4',
+      'video6.mp4',
+      'video7.mp4',
+      'video8.mp4'
     ];
     
     let currentIndex = 0;
     const videoPlayer = document.getElementById('videoPlayer');
     const overlay = document.getElementById('overlay');
     
-    // Au clic sur l'overlay, on démarre la lecture et on masque l'overlay
-    overlay.addEventListener('click', function() {
+    // Fonction déclenchée au démarrage (click ou toucher)
+    function startPlayback() {
+      // On retire les écouteurs pour éviter plusieurs déclenchements
+      overlay.removeEventListener('click', startPlayback);
+      overlay.removeEventListener('touchstart', startPlayback);
       overlay.style.display = 'none';
       playVideo(currentIndex);
-    });
+    }
     
-    // Fonction de lecture d'une vidéo en fonction de son index
+    // Ajout des écouteurs pour click et touchstart
+    overlay.addEventListener('click', startPlayback, false);
+    overlay.addEventListener('touchstart', startPlayback, false);
+    
+    // Fonction qui charge et lance la vidéo en fonction de l'index
     function playVideo(index) {
       videoPlayer.src = videos[index];
       videoPlayer.load();
-      videoPlayer.play().catch(function(error){
-         console.error("Erreur de lecture:", error);
+      videoPlayer.play().catch(error => {
+        console.error("Erreur de lecture :", error);
       });
     }
     
-    // Passage à la vidéo suivante dès la fin de la vidéo en cours
+    // Passage à la vidéo suivante lorsque la vidéo en cours se termine
     videoPlayer.addEventListener('ended', () => {
       currentIndex++;
       if (currentIndex >= videos.length) {
-        // Après la dernière vidéo, attendre 5 secondes avant de repartir sur la première
+        // Après la dernière vidéo, attendre 5 secondes avant de recommencer
         setTimeout(() => {
           currentIndex = 0;
           playVideo(currentIndex);
@@ -102,4 +115,3 @@
   </script>
 </body>
 </html>
-
