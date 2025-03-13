@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Pour un affichage adapté sur mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecture continue de 8 vidéos</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+    #videoContainer {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+    video.visible {
+      opacity: 1;
+    }
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      z-index: 10;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Overlay pour demander l'interaction initiale -->
+  <div id="overlay">Cliquez ou touchez pour démarrer</div>
+  <div id="videoContainer">
+    <!-- Ajout de l'attribut webkit-playsinline pour iOS -->
+    <video id="videoA" playsinline webkit-playsinline></video>
+    <video id="videoB" playsinline webkit-playsinline></video>
+  </div>
+
+  <script>
+    // Liste des 8 vidéos (vérifiez que les chemins sont corrects)
+    const videos = [
+      'dimension1.mp4',
+      'dimension2.mp4',
+      'dimension3.mp4',
+      'dimension4.mp4',
+      'dimension5.mp4',
+      'dimension6.mp4',
+      'dimension7.mp4',
+      'dimension8.mp4'
+    ];
+
+    let currentIndex = 0;
+    let active = 'A'; // L'élément vidéo actuellement affiché: "A" ou "B"
+    const videoA = document.getElementById('videoA');
+    const videoB = document.getElementById('videoB');
+    const overlay = document.getElementById('overlay');
+
+    // Précharge une vidéo dans un élément donné
+    function preloadVideo(videoElement, index) {
+      videoElement.src = videos[index];
+      videoElement.load();
+      console.log("Préchargement de " + videos[index]);
+    }
+
+    // Lance la lecture de l'élément vidéo actif
+    function playActiveVideo() {
+      const activeVideo = active === 'A' ? videoA : videoB;
+      activeVideo.play().then(() => {
+        console.log("Lecture lancée pour " + activeVideo.src);
+      }).catch(err => {
+        console.error("Erreur de lecture pour " + activeVideo.src, err);
+      });
+    }
+
+    // Bascule l'affichage entre les deux vidéos
+    function switchVideos() {
+      active = active === 'A' ? 'B' : 'A';
+      videoA.classList.toggle('visible', active === 'A');
+      videoB.classList.toggle('visible', active === 'B');
+    }
+
+    // Quand la vidéo active se termine, on passe à la suivante
+    function onVideoEnded() {
+      console.log("Vidéo terminée.");
+      currentIndex = (currentIndex + 1) % videos.length;
+      if (currentIndex === 0) {
+        console.log("Cycle terminé, pause de 5 secondes");
+        setTimeout(() => {
+          switchVideos();
+          playActiveVideo();
+          let nextIndex = (currentIndex + 1) % videos.length;
+          const inactive = active === 'A' ? videoB : videoA;
+          preloadVideo(inactive, nextIndex);
+        }, 5000);
+      } else {
+        switchVideos();
+        playActiveVideo();
+        let nextIndex = (currentIndex + 1) % videos.length;
+        const inactive = active === 'A' ? videoB : videoA;
+        preloadVideo(inactive, nextIndex);
+      }
+    }
+
+    videoA.addEventListener('ended', onVideoEnded);
+    videoB.addEventListener('ended', onVideoEnded);
+
+    // Fonction de démarrage : charge la première vidéo et précharge la suivante
+    function startPlayback() {
+      overlay.style.display = 'none';
+      active = 'A';
+      videoA.classList.add('visible');
+      preloadVideo(videoA, currentIndex); // Charge la première vidéo
+      let nextIndex = (currentIndex + 1) % videos.length;
+      preloadVideo(videoB, nextIndex); // Précharge la deuxième vidéo
+      playActiveVideo();
+    }
+
+    // Pour maximiser la compatibilité sur mobile, on écoute plusieurs types d'événements
+    overlay.addEventListener('pointerdown', startPlayback, { once: true });
+    overlay.addEventListener('touchstart', startPlayback, { once: true });
+    overlay.addEventListener('click', startPlayback, { once: true });
+  </script>
+</body>
+</html>
