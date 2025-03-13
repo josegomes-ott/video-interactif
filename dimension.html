@@ -32,7 +32,7 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.5);
       z-index: 10;
     }
-    /* Overlay pour démarrer la lecture (click ou toucher) */
+    /* Overlay pour démarrer la lecture (pointerdown couvre clic et toucher) */
     #overlay {
       position: fixed;
       top: 0;
@@ -51,21 +51,21 @@
   </style>
 </head>
 <body>
-  <!-- Overlay pour démarrer la lecture (cliquez ou touchez) -->
+  <!-- Overlay pour démarrer la lecture -->
   <div id="overlay">Cliquez ou touchez pour démarrer</div>
   
-  <!-- Élément vidéo principal sans l'attribut muted -->
+  <!-- Élément vidéo principal -->
   <video id="videoPlayer" playsinline></video>
   
   <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée) -->
-  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
     // Tableau des chemins des 8 vidéos à lire
     const videos = [
       'dimension1.mp4',
       'dimension2.mp4',
-      'vdimension3.mp4',
+      'dimension3.mp4',
       'dimension4.mp4',
       'dimension5.mp4',
       'dimension6.mp4',
@@ -77,20 +77,17 @@
     const videoPlayer = document.getElementById('videoPlayer');
     const overlay = document.getElementById('overlay');
     
-    // Fonction déclenchée au démarrage (click ou toucher)
+    // Fonction déclenchée au démarrage par une interaction (pointerdown)
     function startPlayback() {
-      // On retire les écouteurs pour éviter plusieurs déclenchements
-      overlay.removeEventListener('click', startPlayback);
-      overlay.removeEventListener('touchstart', startPlayback);
+      overlay.removeEventListener('pointerdown', startPlayback);
       overlay.style.display = 'none';
       playVideo(currentIndex);
     }
     
-    // Ajout des écouteurs pour click et touchstart
-    overlay.addEventListener('click', startPlayback, false);
-    overlay.addEventListener('touchstart', startPlayback, false);
+    // Ajout de l'écouteur d'événement pointerdown pour couvrir clics et interactions tactiles
+    overlay.addEventListener('pointerdown', startPlayback, false);
     
-    // Fonction qui charge et lance la vidéo en fonction de l'index
+    // Fonction qui charge et lance la vidéo selon l'index
     function playVideo(index) {
       videoPlayer.src = videos[index];
       videoPlayer.load();
