@@ -2,9 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <!-- La balise meta viewport permet un affichage adapté sur mobile -->
+  <!-- Assure un affichage adapté sur mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test lecteur vidéo</title>
+  <title>Lecteur vidéo en boucle</title>
   <style>
     html, body {
       margin: 0;
@@ -22,7 +22,7 @@
       object-fit: cover;
       background: #000;
     }
-    /* Overlay pour démarrer la lecture */
+    /* Overlay qui sert à démarrer ou relancer la lecture */
     #overlay {
       position: fixed;
       top: 0;
@@ -54,14 +54,14 @@
   </style>
 </head>
 <body>
-  <!-- Overlay pour démarrer la lecture -->
+  <!-- Overlay initial pour démarrer la lecture -->
   <div id="overlay">Cliquez ou touchez pour démarrer</div>
   
-  <!-- Élément vidéo principal ; l'attribut playsinline est utile sur iOS mais ignoré par Firefox -->
-  <video id="videoPlayer" playsinline controls></video>
+  <!-- Élément vidéo principal -->
+  <video id="videoPlayer" controls></video>
   
   <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée) -->
-  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
     // Liste des vidéos à lire
@@ -80,7 +80,7 @@
     const videoPlayer = document.getElementById('videoPlayer');
     const overlay = document.getElementById('overlay');
     
-    // Fonction appelée lors de l'interaction utilisateur
+    // Démarre la lecture dès qu'une interaction utilisateur est détectée
     function startPlayback() {
       console.log("Démarrage de la lecture");
       overlay.removeEventListener('pointerdown', startPlayback);
@@ -88,18 +88,24 @@
       playVideo(currentIndex);
     }
     
-    // Écouteur pour couvrir clics et toucher (événement pointerdown)
     overlay.addEventListener('pointerdown', startPlayback, false);
     
-    // Fonction pour charger et lire une vidéo
+    // Fonction qui charge et lance la vidéo indiquée par son index
     function playVideo(index) {
-      console.log("Lecture de la vidéo : " + videos[index]);
+      console.log("Tentative de lecture de : " + videos[index]);
       videoPlayer.src = videos[index];
       videoPlayer.load();
       videoPlayer.play().then(() => {
         console.log("Lecture lancée pour " + videos[index]);
       }).catch(error => {
         console.error("Erreur lors de la lecture de " + videos[index], error);
+        // En cas d'échec (autoplay bloqué), afficher l'overlay pour demander une nouvelle interaction
+        overlay.style.display = 'flex';
+        overlay.innerHTML = 'Cliquez pour continuer la lecture';
+        overlay.addEventListener('pointerdown', () => {
+          overlay.style.display = 'none';
+          playVideo(index);
+        }, { once: true });
       });
     }
     
@@ -118,9 +124,9 @@
       }
     });
     
-    // Gestionnaire d'erreur de chargement
+    // Gestionnaire d'erreur de chargement de la vidéo
     videoPlayer.addEventListener('error', (e) => {
-      console.error("Erreur lors du chargement de la vidéo : " + videos[currentIndex], e);
+      console.error("Erreur lors du chargement de la vidéo " + videos[currentIndex], e);
     });
   </script>
 </body>
