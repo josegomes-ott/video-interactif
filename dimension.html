@@ -2,63 +2,78 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <!-- Pour un affichage adapté sur mobile -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lecture Vidéo avec Son</title>
+  <title>Lecteur de vidéos en boucle</title>
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      height: 100%;
       background-color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    /* L'overlay recouvre l'écran et demande une interaction utilisateur */
-    #overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      z-index: 100;
     }
     video {
-      width: 80%;
+      width: 100%;
       height: auto;
-      background: #000;
+      display: block;
+    }
+    /* Style pour le QR code affiché dans le coin inférieur droit */
+    #qr-code {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 150px;
+      height: 150px;
+      opacity: 0.8;
+      background: #fff;
+      padding: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
-  <!-- Overlay pour initier la lecture -->
-  <div id="overlay">Cliquez ou touchez pour démarrer la vidéo</div>
+  <!-- Élément vidéo principal -->
+  <video id="videoPlayer" autoplay muted></video>
   
-  <!-- Élément vidéo : remplacez "video.mp4" par le chemin de votre fichier -->
-  <video id="videoPlayer" controls playsinline>
-    <source src="dimension1.mp4" type="video/mp4">
-    Votre navigateur ne supporte pas la vidéo.
-  </video>
+  <!-- QR Code pour accéder à la page -->
+  <!-- Remplacez la chaîne base64 ci-dessous par celle générée par le script Python (voir ci-après) -->
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
-    const overlay = document.getElementById('overlay');
-    const video = document.getElementById('videoPlayer');
+    // Tableau contenant les chemins des 8 vidéos à lire
+    const videos = [
+      'dimension1.mp4',
+      'dimension2.mp4',
+      'dimension3.mp4',
+      'dimension4.mp4',
+      'dimension5.mp4',
+      'dimension6.mp4',
+      'dimension7.mp4',
+      'dimension8.mp4'
+    ];
     
-    // Dès la première interaction, on masque l'overlay et on démarre la lecture
-    overlay.addEventListener('pointerdown', function() {
-      overlay.style.display = 'none';
-      video.play().catch(error => {
-        console.error("Erreur lors du démarrage de la vidéo :", error);
-      });
+    let currentIndex = 0;
+    const videoPlayer = document.getElementById('videoPlayer');
+    
+    // Fonction de lecture d'une vidéo en fonction de son index
+    function playVideo(index) {
+      videoPlayer.src = videos[index];
+      videoPlayer.load();
+      videoPlayer.play();
+    }
+    
+    // Au terme de chaque vidéo
+    videoPlayer.addEventListener('ended', () => {
+      currentIndex++;
+      if (currentIndex >= videos.length) {
+        // Après la dernière vidéo, attendre 5 secondes avant de repartir sur la première
+        setTimeout(() => {
+          currentIndex = 0;
+          playVideo(currentIndex);
+        }, 5000);
+      } else {
+        playVideo(currentIndex);
+      }
     });
+    
+    // Démarrer la lecture dès le chargement de la page
+    playVideo(currentIndex);
   </script>
 </body>
 </html>
