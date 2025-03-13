@@ -1,1 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Lecteur de vidéos en boucle</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #000;
+    }
+    video {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    /* Style pour le QR code affiché dans le coin inférieur droit */
+    #qr-code {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 150px;
+      height: 150px;
+      opacity: 0.8;
+      background: #fff;
+      padding: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body>
+  <!-- Élément vidéo principal -->
+  <video id="videoPlayer" autoplay muted></video>
+  
+  <!-- QR Code pour accéder à la page -->
+  <!-- Remplacez la chaîne base64 ci-dessous par celle générée par le script Python (voir ci-après) -->
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
+  
+  <script>
+    // Tableau contenant les chemins des 8 vidéos à lire
+    const videos = [
+      'dimension 1.mp4',
+      'dimensio2.mp4',
+      'dimensio3.mp4',
+      'dimensio4.mp4',
+      'dimensio5.mp4',
+      'dimensio6.mp4',
+      'dimensio7.mp4',
+      'dimensio8.mp4'
+    ];
+    
+    let currentIndex = 0;
+    const videoPlayer = document.getElementById('videoPlayer');
+    
+    // Fonction de lecture d'une vidéo en fonction de son index
+    function playVideo(index) {
+      videoPlayer.src = videos[index];
+      videoPlayer.load();
+      videoPlayer.play();
+    }
+    
+    // Au terme de chaque vidéo
+    videoPlayer.addEventListener('ended', () => {
+      currentIndex++;
+      if (currentIndex >= videos.length) {
+        // Après la dernière vidéo, attendre 5 secondes avant de repartir sur la première
+        setTimeout(() => {
+          currentIndex = 0;
+          playVideo(currentIndex);
+        }, 5000);
+      } else {
+        playVideo(currentIndex);
+      }
+    });
+    
+    // Démarrer la lecture dès le chargement de la page
+    playVideo(currentIndex);
+  </script>
+</body>
+</html>
 
