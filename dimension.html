@@ -2,41 +2,52 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Lecteur de vidéos en boucle</title>
+  <!-- Permet un affichage adapté sur mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecture en boucle de 8 vidéos</title>
   <style>
-    body {
+    html, body {
       margin: 0;
-      background-color: #000;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      overflow: hidden;
     }
     video {
-      width: 100%;
-      height: auto;
-      display: block;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      background: #000;
     }
-    /* Style pour le QR code affiché dans le coin inférieur droit */
-    #qr-code {
+    /* Overlay pour demander l'interaction utilisateur */
+    #overlay {
       position: fixed;
-      bottom: 10px;
-      right: 10px;
-      width: 150px;
-      height: 150px;
-      opacity: 0.8;
-      background: #fff;
-      padding: 5px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      z-index: 100;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <!-- Élément vidéo principal -->
-  <video id="videoPlayer" autoplay muted></video>
+  <!-- Overlay qui demande à l'utilisateur de démarrer la lecture -->
+  <div id="overlay">Cliquez ou touchez pour démarrer</div>
   
-  <!-- QR Code pour accéder à la page -->
-  <!-- Remplacez la chaîne base64 ci-dessous par celle générée par le script Python (voir ci-après) -->
-  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
-  
+  <!-- Élément vidéo -->
+  <video id="videoPlayer" controls playsinline>
+    Votre navigateur ne supporte pas la vidéo.
+  </video>
+
   <script>
-    // Tableau contenant les chemins des 8 vidéos à lire
+    // Liste des 8 vidéos à lire (assurez-vous que les fichiers sont accessibles)
     const videos = [
       'dimension1.mp4',
       'dimension2.mp4',
@@ -47,22 +58,32 @@
       'dimension7.mp4',
       'dimension8.mp4'
     ];
-    
+
     let currentIndex = 0;
     const videoPlayer = document.getElementById('videoPlayer');
-    
-    // Fonction de lecture d'une vidéo en fonction de son index
+    const overlay = document.getElementById('overlay');
+
+    // Fonction qui charge et lance la vidéo en fonction de l'index
     function playVideo(index) {
+      console.log("Lecture de : " + videos[index]);
       videoPlayer.src = videos[index];
       videoPlayer.load();
-      videoPlayer.play();
+      videoPlayer.play().then(() => {
+        console.log("Lecture démarrée pour " + videos[index]);
+      }).catch(error => {
+        console.error("Erreur lors de la lecture de " + videos[index], error);
+        // En cas d'erreur (par exemple, si le navigateur bloque l'autoplay), afficher l'overlay pour relancer
+        overlay.style.display = 'flex';
+        overlay.textContent = "Cliquez pour continuer";
+      });
     }
-    
-    // Au terme de chaque vidéo
+
+    // Événement déclenché à la fin d'une vidéo
     videoPlayer.addEventListener('ended', () => {
+      console.log("Vidéo terminée : " + videos[currentIndex]);
       currentIndex++;
       if (currentIndex >= videos.length) {
-        // Après la dernière vidéo, attendre 5 secondes avant de repartir sur la première
+        console.log("Fin de la liste, pause de 5 secondes");
         setTimeout(() => {
           currentIndex = 0;
           playVideo(currentIndex);
@@ -71,9 +92,12 @@
         playVideo(currentIndex);
       }
     });
-    
-    // Démarrer la lecture dès le chargement de la page
-    playVideo(currentIndex);
+
+    // Dès la première interaction (clic ou toucher), masquer l'overlay et lancer la lecture
+    overlay.addEventListener('pointerdown', () => {
+      overlay.style.display = 'none';
+      playVideo(currentIndex);
+    });
   </script>
 </body>
 </html>
