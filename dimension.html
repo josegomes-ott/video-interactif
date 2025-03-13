@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Lecteur de vidéos en boucle</title>
+  <title>Lecteur de vidéos en boucle avec son</title>
   <style>
     body {
       margin: 0;
@@ -25,19 +26,37 @@
       padding: 5px;
       box-shadow: 0 0 5px rgba(0,0,0,0.5);
     }
+    /* Overlay pour lancer la lecture avec le son */
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
-  <!-- Élément vidéo principal -->
-  <video id="videoPlayer" autoplay muted></video>
+  <!-- Overlay qui demande un clic pour démarrer la lecture -->
+  <div id="overlay">Cliquez pour démarrer</div>
   
-  <!-- QR Code pour accéder à la page -->
-  <!-- Remplacez la chaîne base64 ci-dessous par celle générée par le script Python (voir ci-après) -->
-  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
+  <!-- Élément vidéo principal sans l'attribut muted -->
+  <video id="videoPlayer" controls playsinline></video>
+  
+  <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée par votre script) -->
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
     // Tableau contenant les chemins des 8 vidéos à lire
-    const videos = [
+     const videos = [
       'dimension 1.mp4',
       'dimensio2.mp4',
       'dimensio3.mp4',
@@ -50,15 +69,24 @@
     
     let currentIndex = 0;
     const videoPlayer = document.getElementById('videoPlayer');
+    const overlay = document.getElementById('overlay');
+    
+    // Au clic sur l'overlay, on démarre la lecture et on masque l'overlay
+    overlay.addEventListener('click', function() {
+      overlay.style.display = 'none';
+      playVideo(currentIndex);
+    });
     
     // Fonction de lecture d'une vidéo en fonction de son index
     function playVideo(index) {
       videoPlayer.src = videos[index];
       videoPlayer.load();
-      videoPlayer.play();
+      videoPlayer.play().catch(function(error){
+         console.error("Erreur de lecture:", error);
+      });
     }
     
-    // Au terme de chaque vidéo
+    // Passage à la vidéo suivante dès la fin de la vidéo en cours
     videoPlayer.addEventListener('ended', () => {
       currentIndex++;
       if (currentIndex >= videos.length) {
@@ -71,9 +99,6 @@
         playVideo(currentIndex);
       }
     });
-    
-    // Démarrer la lecture dès le chargement de la page
-    playVideo(currentIndex);
   </script>
 </body>
 </html>
