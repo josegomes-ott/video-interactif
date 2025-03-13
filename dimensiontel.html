@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Permet un affichage adapté sur mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecture en boucle de 8 vidéos</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      overflow: hidden;
+    }
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      background: #000;
+    }
+    /* Overlay pour demander l'interaction utilisateur */
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      z-index: 100;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Overlay qui demande à l'utilisateur de démarrer la lecture -->
+  <div id="overlay">Cliquez ou touchez pour démarrer</div>
+  
+  <!-- Élément vidéo -->
+  <video id="videoPlayer" controls playsinline>
+    Votre navigateur ne supporte pas la vidéo.
+  </video>
+
+  <script>
+    // Liste des 8 vidéos à lire (assurez-vous que les fichiers sont accessibles)
+    const videos = [
+      'dimension1.mp4',
+      'dimension2.mp4',
+      'dimension3.mp4',
+      'dimension4.mp4',
+      'dimension5.mp4',
+      'dimension6.mp4',
+      'dimension7.mp4',
+      'dimension8.mp4'
+    ];
+
+    let currentIndex = 0;
+    const videoPlayer = document.getElementById('videoPlayer');
+    const overlay = document.getElementById('overlay');
+
+    // Fonction qui charge et lance la vidéo en fonction de l'index
+    function playVideo(index) {
+      console.log("Lecture de : " + videos[index]);
+      videoPlayer.src = videos[index];
+      videoPlayer.load();
+      videoPlayer.play().then(() => {
+        console.log("Lecture démarrée pour " + videos[index]);
+      }).catch(error => {
+        console.error("Erreur lors de la lecture de " + videos[index], error);
+        // En cas d'erreur (par exemple, si le navigateur bloque l'autoplay), afficher l'overlay pour relancer
+        overlay.style.display = 'flex';
+        overlay.textContent = "Cliquez pour continuer";
+      });
+    }
+
+    // Événement déclenché à la fin d'une vidéo
+    videoPlayer.addEventListener('ended', () => {
+      console.log("Vidéo terminée : " + videos[currentIndex]);
+      currentIndex++;
+      if (currentIndex >= videos.length) {
+        console.log("Fin de la liste, pause de 5 secondes");
+        setTimeout(() => {
+          currentIndex = 0;
+          playVideo(currentIndex);
+        }, 5000);
+      } else {
+        playVideo(currentIndex);
+      }
+    });
+
+    // Dès la première interaction (clic ou toucher), masquer l'overlay et lancer la lecture
+    overlay.addEventListener('pointerdown', () => {
+      overlay.style.display = 'none';
+      playVideo(currentIndex);
+    });
+  </script>
+</body>
+</html>
