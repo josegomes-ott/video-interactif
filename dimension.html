@@ -2,14 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Lecteur de vidéos en boucle avec son</title>
+  <title>Test lecteur vidéo</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      background-color: #000;
       overflow: hidden;
+      background-color: #000;
     }
     video {
       position: absolute;
@@ -20,7 +20,23 @@
       object-fit: cover;
       background: #000;
     }
-    /* Style pour le QR code affiché dans le coin inférieur droit */
+    /* Overlay pour démarrer la lecture */
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 100;
+    }
+    /* QR Code en bas à droite */
     #qr-code {
       position: fixed;
       bottom: 10px;
@@ -33,36 +49,20 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.5);
       z-index: 10;
     }
-    /* Overlay pour démarrer la lecture (pointerdown couvre clic et toucher) */
-    #overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      cursor: pointer;
-      z-index: 100;
-    }
   </style>
 </head>
 <body>
   <!-- Overlay pour démarrer la lecture -->
   <div id="overlay">Cliquez ou touchez pour démarrer</div>
   
-  <!-- Élément vidéo principal avec un poster pour vérifier son affichage -->
-  <video id="videoPlayer" playsinline ></video>
+  <!-- Élément vidéo principal -->
+  <video id="videoPlayer" playsinline controls></video>
   
   <!-- QR Code pour accéder à la page (remplacez la chaîne Base64 par celle générée) -->
-  <img id="qr-code" src="data:image/png;base64,=" alt="QR Code">
+  <img id="qr-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAFK0lEQVR4nO3dQY7jMBSA4Q8u/f5sF4Ysmcpl7kY9SaT5QHqF+5q2AfoKGhoZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRO7j4N8AOqpj44I7o0AAAAASUVORK5CYII=" alt="QR Code">
   
   <script>
-    // Tableau des chemins des 8 vidéos à lire
+    // Liste des vidéos à lire
     const videos = [
       'dimension1.mp4',
       'dimension2.mp4',
@@ -78,31 +78,35 @@
     const videoPlayer = document.getElementById('videoPlayer');
     const overlay = document.getElementById('overlay');
     
-    // Fonction déclenchée au démarrage par une interaction (pointerdown)
+    // Fonction appelée lors de l'interaction utilisateur
     function startPlayback() {
+      console.log("Démarrage de la lecture");
       overlay.removeEventListener('pointerdown', startPlayback);
       overlay.style.display = 'none';
       playVideo(currentIndex);
     }
     
-    // Ajout de l'écouteur d'événement pointerdown pour couvrir clics et interactions tactiles
+    // Écouteur pour couvrir clics et toucher (événement pointerdown)
     overlay.addEventListener('pointerdown', startPlayback, false);
     
-    // Fonction qui charge et lance la vidéo selon l'index
+    // Fonction pour charger et lire une vidéo
     function playVideo(index) {
-      console.log("Lecture de la vidéo :", videos[index]);
+      console.log("Lecture de la vidéo : " + videos[index]);
       videoPlayer.src = videos[index];
       videoPlayer.load();
-      videoPlayer.play().catch(error => {
-        console.error("Erreur de lecture :", error);
+      videoPlayer.play().then(() => {
+        console.log("Lecture lancée pour " + videos[index]);
+      }).catch(error => {
+        console.error("Erreur lors de la lecture de " + videos[index], error);
       });
     }
     
-    // Passage à la vidéo suivante lorsque la vidéo en cours se termine
+    // Passage à la vidéo suivante à la fin de la lecture
     videoPlayer.addEventListener('ended', () => {
+      console.log("Vidéo terminée : " + videos[currentIndex]);
       currentIndex++;
       if (currentIndex >= videos.length) {
-        // Après la dernière vidéo, attendre 5 secondes avant de recommencer
+        console.log("Fin de la liste, redémarrage dans 5 secondes");
         setTimeout(() => {
           currentIndex = 0;
           playVideo(currentIndex);
@@ -112,9 +116,9 @@
       }
     });
     
-    // Écouteur pour détecter les erreurs de chargement de la vidéo
+    // Gestionnaire d'erreur de chargement
     videoPlayer.addEventListener('error', (e) => {
-      console.error("Erreur de chargement de la vidéo :", e);
+      console.error("Erreur lors du chargement de la vidéo : " + videos[currentIndex], e);
     });
   </script>
 </body>
